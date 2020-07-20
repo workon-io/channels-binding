@@ -11,7 +11,7 @@ if __name__ == "__main__":
     except BaseException:
         revision = 'revision'
 
-    version_py = os.path.join(os.path.dirname(__file__), 'docker_emperor/__init__.py')
+    version_py = os.path.join(os.path.dirname(__file__), 'channels_bind/__init__.py')
     version = re.search(r'__version__ = "([\d\.]+)"', open(version_py, 'r').read()).group(1)
     print('Current version: {}'.format(version))
 
