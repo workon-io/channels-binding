@@ -11,7 +11,7 @@ if __name__ == "__main__":
     except BaseException:
         revision = 'revision'
 
-    version_py = os.path.join(os.path.dirname(__file__), 'channels_bind/__init__.py')
+    version_py = os.path.join(os.path.dirname(__file__), 'channels_binding/__init__.py')
     version = re.search(r'__version__ = "([\d\.]+)"', open(version_py, 'r').read()).group(1)
     print('Current version: {}'.format(version))
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         new_version = "{}.{}.{}".format(major, medium, minor)
         print('New version: {}'.format(new_version))
 
-        comment = raw_input('Comment: ')
+        comment = input('Comment: ')
         comment = comment.strip()
         if not comment:
             comment = 'autotagging'

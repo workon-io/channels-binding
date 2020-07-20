@@ -1,15 +1,15 @@
 deploy:
-	python autotag.py minor
+	python3 autotag.py minor
 	make pypi_upload
 	make push
 
 deploy_medium:
-	python autotag.py medium
+	python3 autotag.py medium
 	make pypi_upload
 	make push
 
 deploy_major:
-	python autotag.py major
+	python3 autotag.py major
 	make pypi_upload
 	make push
 
@@ -17,14 +17,15 @@ push:
 	git push
 
 pypi_upload:
-	python setup.py sdist upload -r pypi || echo 'channels-bind is up-to-date'
+	python3 setup.py sdist bdist_wheel
+	python3 -m twine upload --repository pypi dist/* || echo 'channels-binding is up-to-date'
 
 develop:
-	sudo pip install .
-	python setup.py develop --user
+	sudo pip3 install .
+	python3 setup.py develop --user
 
 undevelop:
-	sudo pip uninstall channels-bind 
+	sudo pip uninstall channels-binding 
 	
 clean:
 	find . -type f -name "*.pyc" -delete

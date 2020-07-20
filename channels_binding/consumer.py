@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from urllib.parse import parse_qs
 from collections import namedtuple
-from channels_bind.binding import register_bindings, registered_binding_classes, registered_binding_events
+from channels_binding.binding import register_bindings, registered_binding_classes, registered_binding_events
 
 
 logger = logging.getLogger(__name__)

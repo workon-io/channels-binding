@@ -3,7 +3,7 @@ import sys
 import setuptools
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (3, 9)
+REQUIRED_PYTHON = (2, 7)
 EXCLUDE_FROM_PACKAGES = [
     'tests', 'build', 'dist',
 ]
@@ -25,24 +25,26 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-version = __import__('channels_bind').__version__
+version = __import__('channels_binding').__version__
 
 setuptools.setup(
-    name='channels_bind',
+    name='channels_binding',
     version=version,
     # python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     author="Damien Autrusseau",
     author_email="damien.autrusseau@gmail.com",
-    description=("Docker CLI that combine compose and machine for a full stack deployment"),
-    license="Apache Software License",
-    keywords="",
-    url="https://pypi.org/project/docker-emperor",
+    description="Channels API Bindings system",
+    license="MIT",
+    keywords="channels api binding websocket rest django",
+    url="https://pypi.org/project/channels-binding",
     # packages=['tests'],
-    long_description=read('README.rst'),
+    long_description=read('README.md'),
+    long_description_content_type="text/markdown",
     packages=setuptools.find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     install_requires=[
-        'channels>=2.4.0',
+        'Django>=1.8',
+        'channels>=2.1.3',
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -51,10 +53,4 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
-    entry_points={
-        'console_scripts': [
-            'docker-emperor = docker_emperor.root:entrypoint',
-            'de = docker_emperor.root:entrypoint',
-        ],
-    },
 )

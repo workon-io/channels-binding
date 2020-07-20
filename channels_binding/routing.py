@@ -5,7 +5,7 @@ from django.urls import include, path, re_path
 from django.conf.urls.static import static
 from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
 from channels.sessions import SessionMiddlewareStack
-from channels_bind.consumer import Consumer
+from channels_binding.consumer import Consumer
 
 
 application = ProtocolTypeRouter({
