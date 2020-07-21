@@ -1,5 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, Page
+from django.forms import modelform_factory
+from channels.db import database_sync_to_async
 
 __all__ = [
     'AsyncModelBinding',
@@ -8,12 +10,13 @@ __all__ = [
 
 class AsyncModelBinding(object):
 
-    fields = []  # hack to pass cls.register() without ValueError
     queryset = None
     # mark as abstract
     model = None
     lookup_field = 'pk'
     page_size = 25
+    model_form = None
+    fields = []  # hack to pass cls.register() without ValueError
 
     def get_queryset(self, data):
         if not self.queryset:

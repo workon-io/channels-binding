@@ -25,8 +25,9 @@ class RegisteredBindingMetaClass(type):
                 method = getattr(binding_class, method_name)
                 is_bind = getattr(method, 'is_bind', False)
                 if is_bind:
+                    args = getattr(method, 'args', [])
                     kwargs = getattr(method, 'kwargs', {})
-                    name = kwargs.get('name', method_name) or method_name
+                    name = kwargs.get('name', args[0] if len(args) else method_name) or method_name
                     event = f'{stream}.{name}'
                     events = registered_binding_events.setdefault(event, [])
                     events.append([binding_class, method_name])

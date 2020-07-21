@@ -14,6 +14,7 @@ from .serializers import (
 from .events import (
     AsyncSearchModelBinding,
     AsyncRetrieveModelBinding,
+    AsyncSaveModelBinding,
 )
 from ..utils import (
     bind
@@ -44,5 +45,6 @@ class AsyncBinding(
     AsyncSerializerBinding,
     AsyncSearchModelBinding,
     AsyncRetrieveModelBinding,
+    AsyncSaveModelBinding,
 ):
     pass

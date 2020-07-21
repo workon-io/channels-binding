@@ -16,13 +16,13 @@ __all__ = [
 ]
 
 
-def bind(name=None, **kwargs):
+def bind(*args, **kwargs):
     """
     Used to mark a method on a Binding that should be binded for event receive.
     """
     def decorator(func):
-        func.name = name
         func.is_bind = True
+        func.args = args
         func.kwargs = kwargs
         return func
     return decorator
@@ -35,8 +35,9 @@ class DbSync():
 
     @database_sync_to_async
     def __enter__(self):
-        return None
+        return {}
 
+    @database_sync_to_async
     def __exit__(self, type, value, traceback):
         # Exception handling here
         pass
@@ -54,6 +55,7 @@ class Sync():
     def __enter__(self):
         return None
 
+    @async_to_sync
     def __exit__(self, type, value, traceback):
         # Exception handling here
         pass
