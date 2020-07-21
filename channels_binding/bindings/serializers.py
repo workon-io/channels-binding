@@ -9,13 +9,13 @@ class AsyncSerializerBinding(object):
 
     serializer_class = None
 
-    def serialize(self, instance, data, *args, **kwargs):
+    def serialize(self, instance, *args, **kwargs):
         # kwargs['context'] = self.get_serializer_context()
         if not self.serializer_class:
             if hasattr(instance, '__json__'):
-                return getattr(instance, '__json__')(**kwargs)
+                return getattr(instance, '__json__')(*args, **kwargs)
             elif hasattr(instance, 'to_json'):
-                return getattr(instance, 'to_json')(**kwargs)
+                return getattr(instance, 'to_json')(*args, **kwargs)
             elif hasattr(instance, 'json'):
                 return getattr(instance, 'json')
             else:
@@ -23,9 +23,9 @@ class AsyncSerializerBinding(object):
         else:
             return self.serializer_class(instance, *args, **kwargs).data
 
-    def serialize_results(self, queryset, data, *args, **kwargs):
+    def serialize_results(self, queryset, *args, **kwargs):
         if not self.serializer_class:
-            rows = [self.serialize(inst, data, *args, **kwargs) for inst in queryset]
+            rows = [self.serialize(inst, *args, **kwargs) for inst in queryset]
             return dict(page=queryset.number, limit=queryset.paginator.per_page, count=queryset.paginator.count, rows=rows)
         else:
             return self.serializer_class(queryset, *args, **kwargs).data

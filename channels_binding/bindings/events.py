@@ -43,7 +43,7 @@ class AsyncRetrieveModelBinding(object):
     async def retrieve(self, *args, **kwargs):
         await self.send('retrieve', await self.sync_retrieve(*args, **kwargs))
 
-    def retrieve_extra_data(self, data, *args, **kwargs):
+    def retrieve_extra_data(self, *args, **kwargs):
         return {}
 
 
