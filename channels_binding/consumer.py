@@ -5,53 +5,71 @@ import requests
 import traceback
 import logging
 import decimal
-import glob
-import importlib.util
-from asgiref.sync import async_to_sync
-from psycopg2.extras import NumericRange
+try:
+    from psycopg2.extras import NumericRange
+except ImportError as e:
+    NumericRange = None
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from urllib.parse import parse_qs
-from collections import namedtuple
-from channels_binding.binding import register_bindings, registered_binding_classes, registered_binding_events
+from .binding import (
+    register_bindings,
+    registered_binding_classes,
+    registered_binding_events
+)
+from . import settings as self_settings
 
 
 logger = logging.getLogger(__name__)
-__all__ = ['Consumer', ]
+__all__ = ['AsyncConsumer', ]
 
 
 register_bindings()
 print(registered_binding_events)
 
 
-class Consumer(AsyncWebsocketConsumer):
+class AsyncConsumer(AsyncWebsocketConsumer):
 
     groups = ["all"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
+        self.user_id = None
+        self.user_group_name = None
         self.actions = {}
+        self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
 
     @database_sync_to_async
-    def get_user(self, token_key):
-        return User.retrieve(token_key)
+    def get_user(self):
+        self.user = None
+        self.user_id = None
+        self.user_group_name = None
+        for auth in self.authentifications:
+            if hasattr(auth, 'get_user'):
+                self.user = auth.get_user(self)
+                if self.user:
+                    self.user_id = getattr(self.user, 'pk', getattr(self.user, 'id', getattr(self.user, 'key')))
+                    if self.user_id:
+                        self.user_group_name = f'user.{self.user_id}'
+                    break
 
     async def connect(self):
         try:
-            self.user = await self.get_user(parse_qs(self.scope['query_string'].decode('utf8')).get('token', (None,))[0])
+            self.user = self.get_user()
             if self.user:
-                self.user_group_name = f'user.{self.user.pk}'
                 self.bindings_by_class = {bc: bc(self) for bc in registered_binding_classes}
-                await self.channel_layer.group_add(self.user_group_name, self.channel_name)
+                if self.user_group_name:
+                    await self.channel_layer.group_add(self.user_group_name, self.channel_name)
                 await self.accept()
                 # await self.send('auth.roles', self.user.roles)
             else:
-                raise DenyConnection("Invalid Token")
-                await self.close()
+                if self_settings.ANONYMOUS_CONNECTION_ALLOWED:
+                    await self.accept()
+                else:
+                    raise DenyConnection("Invalid Token")
+                    await self.close()
         except Exception as e:
             logger.error(traceback.format_exc())
             raise DenyConnection(traceback.format_exc())
@@ -59,7 +77,7 @@ class Consumer(AsyncWebsocketConsumer):
 
     # On client disconnect
     async def disconnect(self, close_code):
-        if self.user:
+        if self.user_group_name:
             # TODO Discard all groups
             await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
             # await self.channel_layer.group_discard(f'siliconexpert', self.channel_name)
@@ -131,7 +149,7 @@ class JSONEncoder(json.JSONEncoder):
             return obj.decode('utf-8')
         elif isinstance(obj, memoryview):
             return obj.tobytes().decode('utf-8')
-        elif isinstance(obj, NumericRange):
+        elif NumericRange and isinstance(obj, NumericRange):
             return [obj.lower, obj.upper]
         elif isinstance(obj, decimal.Decimal):
             return float(obj)
