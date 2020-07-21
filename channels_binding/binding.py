@@ -80,8 +80,10 @@ class AsyncBinding(metaclass=RegisteredBinding):
 
     def __init__(self, consumer):
         self.consumer = consumer
-        self.send = consumer.send
         self.user = consumer.user
+
+    async def send(self, event, data, stream=None):
+        await self.consumer.send(f'{stream or self.stream}.attributes', data)
 
     def get_queryset(self, data):
         if not self.queryset:
@@ -105,28 +107,30 @@ class AsyncBinding(metaclass=RegisteredBinding):
     def serialize(self, instance, data, *args, **kwargs):
         # kwargs['context'] = self.get_serializer_context()
         if not self.serializer_class:
-            print(type(instance))
-            if isinstance(instance, Page):
-                rows = [getattr(d, '__json__')(**kwargs) for d in instance]
-                return dict(page=instance.number, limit=instance.paginator.per_page, count=instance.paginator.count, rows=rows)
-            else:
+            if hasattr(instance, '__json__'):
                 return getattr(instance, '__json__')(**kwargs)
+            elif hasattr(instance, 'to_json'):
+                return getattr(instance, 'to_json')(**kwargs)
+            elif hasattr(instance, 'json'):
+                return getattr(instance, 'json')
+            else:
+                return {}
         else:
             return self.serializer_class(instance, *args, **kwargs).data
 
-    def get_serializer_context(self):
-        return {
-        }
-
-    def serialize_data(self, instance):
-        return self.get_serializer(instance).data
+    def serialize_results(self, queryset, data, *args, **kwargs):
+        if not self.serializer_class:
+            rows = [self.serialize(inst, data, *args, **kwargs) for inst in queryset]
+            return dict(page=queryset.number, limit=queryset.paginator.per_page, count=queryset.paginator.count, rows=rows)
+        else:
+            return self.serializer_class(queryset, *args, **kwargs).data
 
     @bind()
     async def search(self, data):
         queryset = await database_sync_to_async(self.get_queryset)(data)
         queryset = await database_sync_to_async(self.filter_queryset)(queryset, data)
         queryset = await database_sync_to_async(self.paginate)(queryset, data)
-        data = await database_sync_to_async(self.serialize)(queryset, data)
+        data = await database_sync_to_async(self.serialize_results)(queryset, data)
         await self.send(f'{self.stream}.search', data)
 
     @bind()
