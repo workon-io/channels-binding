@@ -1,32 +1,24 @@
 import json
 import os
-import datetime
 import requests
 import traceback
 import logging
-import decimal
-try:
-    from psycopg2.extras import NumericRange
-except ImportError as e:
-    NumericRange = None
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.conf import settings
-from .binding import (
-    register_bindings,
+from .bindings.registry import (
     registered_binding_classes,
     registered_binding_events
 )
+from .utils import bind, JSONEncoder
 from . import settings as self_settings
 
 
 logger = logging.getLogger(__name__)
-__all__ = ['AsyncConsumer', ]
-
-
-register_bindings()
-print(registered_binding_events)
+__all__ = [
+    'AsyncConsumer',
+]
 
 
 class AsyncConsumer(AsyncWebsocketConsumer):
@@ -104,6 +96,26 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             logger.error(traceback.format_exc())
             await self.send('error', traceback.format_exc())
 
+    @bind()
+    async def search(self, data):
+        queryset = await database_sync_to_async(self.get_queryset)(data)
+        queryset = await database_sync_to_async(self.filter_queryset)(queryset, data)
+        queryset = await database_sync_to_async(self.paginate)(queryset, data)
+        data = await database_sync_to_async(self.serialize)(queryset, data)
+        await self.send(f'{self.stream}.search', data)
+
+    @bind()
+    async def retrieve(self, data):
+        instance = await database_sync_to_async(self.get_object)(data)
+        data = await database_sync_to_async(self.serialize)(instance, data)
+        await self.send(f'{self.stream}.retrieve', data)
+
+    def get_object(self, data):
+        try:
+            return self.model.objects.get(pk=data.get('id', None))
+        except self.model.DoesNotExist:
+            raise Exception(f'{self.stream} Does Not Exist')
+
     # Send a event message
     async def send(self, event, data, group=None, user=None):
 
@@ -137,20 +149,3 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     async def channel_message(self, event):
         await super().send(text_data=json.dumps(event['message'], cls=JSONEncoder))
-
-
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, '__json__'):
-            return obj.__json__()
-        elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-        elif isinstance(obj, bytes):
-            return obj.decode('utf-8')
-        elif isinstance(obj, memoryview):
-            return obj.tobytes().decode('utf-8')
-        elif NumericRange and isinstance(obj, NumericRange):
-            return [obj.lower, obj.upper]
-        elif isinstance(obj, decimal.Decimal):
-            return float(obj)
-        return super().default(obj)

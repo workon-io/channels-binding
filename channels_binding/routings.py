@@ -5,14 +5,14 @@ from django.urls import include, path, re_path
 from django.conf.urls.static import static
 from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
 from channels.sessions import SessionMiddlewareStack
-from channels_binding.consumer import Consumer
+from .consumers import AsyncConsumer
 
 
-application = ProtocolTypeRouter({
+async_root_application = ProtocolTypeRouter({
     # (http->django views is added by default)
     'websocket': SessionMiddlewareStack(
         URLRouter([
-            path('', Consumer, name="root"),
+            path('', AsyncConsumer, name="root"),
         ])
     )
 })

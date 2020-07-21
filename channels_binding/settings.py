@@ -30,19 +30,3 @@ for string in classes:
 
 DEFAULT_PAGE_SIZE = get_default("DEFAULT_PAGE_SIZE")
 ANONYMOUS_CONNECTION_ALLOWED = bool(get_default("ANONYMOUS_CONNECTION_ALLOWED"))
-
-# DEFAULTS = {
-#     'DEFAULT_PAGE_SIZE': 25,
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'channels_binding.permissions.AllowAny',
-#     ),
-#     'DEFAULT_AUTHENTIFICATION_CLASSES': (
-#         'channels_binding.authentification.DjangoUser',
-#     )
-# }
-# IMPORT_STRINGS = (
-#     'DEFAULT_PERMISSION_CLASSES',
-#     'DEFAULT_AUTHENTIFICATION_CLASSES',
-# )
-
-# api_settings = APISettings(getattr(settings, 'CHANNELS_BINDING', None), DEFAULTS, IMPORT_STRINGS)
