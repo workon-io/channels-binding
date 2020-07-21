@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 
-__all__ = ['AsyncBinding', 'registered_binding_classes', 'register_bindings']
+__all__ = ['AsyncBinding', 'registered_binding_classes', 'register_bindings', 'bind']
 
 registered_binding_classes = set()
 registered_binding_events = dict()
