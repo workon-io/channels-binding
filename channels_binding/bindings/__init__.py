@@ -35,8 +35,31 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
         self.consumer = consumer
         self.user = consumer.user
 
-    async def send(self, event, data, stream=None):
-        await self.consumer.send(f'{stream or self.stream}.{event}', data)
+    # Respond to the current socket
+    async def send(self, event, *args, **kwargs):
+        stream = kwargs.get('stream', self.stream) or self.stream
+        await self.consumer.send(f'{stream}.{event}', *args, **kwargs)
+
+    # Respond to the current socket
+    async def reflect(self, *args, **kwargs):
+        await self.send(*args, **kwargs)
+
+    # Respond to the current streamed group attached sockets
+
+    async def dispatch(self, *args, **kwargs):
+        await self.send(*args, group=kwargs.get('stream', self.stream), **kwargs)
+
+    # Respond to all sockets
+    async def broadcast(self, *args, **kwargs):
+        await self.send(*args, group='__all__')
+
+    # Respond to the current streamed group attached sockets
+    async def subscribe(self, group=None):
+        await self.consumer.subscribe(group or self.stream)
+
+    # Respond to the current streamed group attached sockets
+    async def unsubscribe(self, group=None):
+        await self.consumer.unsubscribe(group or self.stream)
 
 
 class AsyncBinding(

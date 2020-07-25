@@ -23,9 +23,20 @@ class AsyncSerializerBinding(object):
         else:
             return self.serializer_class(instance, *args, **kwargs).data
 
-    def serialize_results(self, queryset, *args, **kwargs):
+    def serialize_queryset(self, queryset, *args, **kwargs):
         if not self.serializer_class:
             rows = [self.serialize(inst, *args, **kwargs) for inst in queryset]
-            return dict(page=queryset.number, limit=queryset.paginator.per_page, count=queryset.paginator.count, rows=rows)
+            return dict(
+                page=queryset.number,
+                limit=queryset.paginator.per_page,
+                count=queryset.paginator.count,
+                rows=rows
+            )
         else:
             return self.serializer_class(queryset, *args, **kwargs).data
+
+    def serialize_form(self, form, *args, **kwargs):
+        if form.errors:
+            return {'errors': form.errors}
+        else:
+            return {'success': True}

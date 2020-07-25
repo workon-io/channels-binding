@@ -23,13 +23,12 @@ __all__ = [
 
 class AsyncConsumer(AsyncWebsocketConsumer):
 
-    groups = ["all"]
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
         self.user_id = None
         self.user_group_name = None
+        self.groups = set('__all__')
         self.actions = {}
         self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
 
@@ -52,8 +51,9 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             self.user = self.get_user()
             if self.user:
                 self.bindings_by_class = {bc: bc(self) for bc in registered_binding_classes}
+                await self.subscribe('__all__')
                 if self.user_group_name:
-                    await self.channel_layer.group_add(self.user_group_name, self.channel_name)
+                    await self.subscribe(user_group_name)
                 await self.accept()
                 # await self.send('auth.roles', self.user.roles)
             else:
@@ -69,10 +69,16 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     # On client disconnect
     async def disconnect(self, close_code):
-        if self.user_group_name:
-            # TODO Discard all groups
-            await self.channel_layer.group_discard(self.user_group_name, self.channel_name)
-            # await self.channel_layer.group_discard(f'siliconexpert', self.channel_name)
+        for group in set(self.groups):
+            await self.unsubscribe(group)
+
+    async def subscribe(self, group):
+        self.groups.add(group)
+        await self.channel_layer.group_add(group, self.channel_name)
+
+    async def unsubscribe(self, group):
+        self.groups.remove(group)
+        await self.channel_layer.group_discard(group, self.channel_name)
 
     # On client send a message, pass throught the corresponding action_ (event)
 
@@ -86,6 +92,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             for binding_class, method_name in events:
                 binding = self.bindings_by_class.get(binding_class, None)
                 if binding:
+                    await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from sfront
                     if not isinstance(payload, dict):
                         payload = {}
                     await getattr(binding, method_name)(payload)
@@ -96,56 +103,33 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             logger.error(traceback.format_exc())
             await self.send('error', traceback.format_exc())
 
-    @bind()
-    async def search(self, data):
-        queryset = await database_sync_to_async(self.get_queryset)(data)
-        queryset = await database_sync_to_async(self.filter_queryset)(queryset, data)
-        queryset = await database_sync_to_async(self.paginate)(queryset, data)
-        data = await database_sync_to_async(self.serialize)(queryset, data)
-        await self.send(f'{self.stream}.search', data)
-
-    @bind()
-    async def retrieve(self, data):
-        instance = await database_sync_to_async(self.get_object)(data)
-        data = await database_sync_to_async(self.serialize)(instance, data)
-        await self.send(f'{self.stream}.retrieve', data)
-
-    def get_object(self, data):
-        try:
-            return self.model.objects.get(pk=data.get('id', None))
-        except self.model.DoesNotExist:
-            raise Exception(f'{self.stream} Does Not Exist')
-
     # Send a event message
     async def send(self, event, data, group=None, user=None):
-
+        message = await self.encode({'event': event, 'data': data})
+        # Private
         if user:
             # Self to a specific user
             await self.channel_layer.group_send(
                 f'user.{user.id}',
-                {
-                    'type': 'channel_message',
-                    'message': {'event': event, 'data': data}
-                }
+                {'type': 'channel_message', 'message': message}
             )
+
+        # Dispatch or group == __all__ to broadcast
         elif group:
             # Self to a specific group
             await self.channel_layer.group_send(
                 group,
-                {
-                    'type': 'channel_message',
-                    'message': {'event': event, 'data': data}
-                }
+                {'type': 'channel_message', 'message': message}
             )
+
+        # Reflect
         else:
             # Self to current thread ~= the connected user
-            await super().send(text_data=json.dumps({'event': event, 'data': data}, cls=JSONEncoder))
+            await super().send(text_data=message)
 
-    # async def broadcast(self, event, data, group=None, user=None):
-    # await super().send(text_data=json.dumps({ 'event': event, 'data': data
-    # }))
+    async def encode(self, message):
+        return json.dumps(message, cls=JSONEncoder)
 
     # Receive message from the group
-
-    async def channel_message(self, event):
-        await super().send(text_data=json.dumps(event['message'], cls=JSONEncoder))
+    async def channel_message(self, message):
+        await super().send(text_data=message['message'])

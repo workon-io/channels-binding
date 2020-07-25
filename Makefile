@@ -31,3 +31,11 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	rm -rf nosetests.xml coverage.xml htmlcov *.egg-info *.pdf dist violations.txt
 
+watch:
+	sudo watchmedo auto-restart -R -p '*.py' -- make replace
+
+replace:	
+	sudo rm -r /home/dev/tools.hub/api/clearversion/app/channels_binding
+	sudo cp -r ./channels_binding /home/dev/tools.hub/api/clearversion/app/channels_binding
+	sudo rm -r /home/dev/tools.hub/api/component/app/channels_binding
+	sudo cp -r ./channels_binding /home/dev/tools.hub/api/component/app/channels_binding
