@@ -18,8 +18,10 @@ push:
 	git push --tags
 
 pypi_upload:
+	rm -r dist/*
 	python3 setup.py sdist bdist_wheel
 	python3 -m twine upload --repository pypi dist/* || echo 'channels-binding is up-to-date'
+
 
 develop:
 	sudo pip3 install .

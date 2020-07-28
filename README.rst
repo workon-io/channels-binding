@@ -3,9 +3,11 @@ Channels Bindins API
 
 Channels Binding exposes an JSON API streaming system across Websocket or HTTP Rest in very few code lines, with a very simple and verboseless exchange structure.
 
+- `Gettings Started <#getting-started>`__
+
 Capabilities
 ------------
-- Both Async or Sync Consumers
+- `Both Async or Sync Consumers <#getting-started>`__
 - Both HTTP Rest or WS API
 - Full support of 'retrieve', 'search', 'list', 'update', 'create', 'save', 'delete', 'subscribe' events
 - Support of Hashed events for targeted subscribing
@@ -83,6 +85,7 @@ Getting Started
 -  Add ``channels-binding`` to requirements.txt
 
 -  Or install with pip 
+
 .. code:: bash
 
   pip install channels-binding
@@ -170,4 +173,3 @@ Getting Started
             id: 5763 
         }
     }))
-}
