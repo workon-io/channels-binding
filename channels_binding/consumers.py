@@ -11,7 +11,7 @@ from .bindings.registry import (
     registered_binding_classes,
     registered_binding_events
 )
-from .utils import bind, JSONEncoder
+from .utils import send
 from . import settings as self_settings
 
 
@@ -28,6 +28,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         self.user = None
         self.user_id = None
         self.user_group_name = None
+        self.hash = None
         self.groups = set('__all__')
         self.actions = {}
         self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
@@ -87,7 +88,8 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             data = json.loads(text_data)
             event_hash = data['event'].split('#', 1)
             event = event_hash[0]
-            hash = event_hash[-1] if len(event_hash) == 2 else None
+            self.hash = event_hash[-1] if len(event_hash) == 2 else None
+            print('----=> receive', event, self.hash)
             payload = data.get('data', {})
             events = registered_binding_events.get(event, [])
             counter = 0
@@ -97,43 +99,18 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, dict):
                         payload = {}
-                    await getattr(binding, method_name)(payload, hash=hash)
+                    await getattr(binding, method_name)(payload)
                     counter += 1
             if not counter:
-                await self.send('error', f'No binding found for {event}#{hash}')
+                await self.send('error', f'No binding found for {event}#{self.hash}')
         except Exception as e:
             logger.error(traceback.format_exc())
             await self.send('error', traceback.format_exc())
 
     # Send a event message
-    async def send(self, event, data, group=None, user=None, hash=None):
-
-        if hash:
-            event = f'{event}#{hash}'
-        message = await self.encode({'event': event, 'data': data})
-        # Private
-        if user:
-            # Self to a specific user
-            await self.channel_layer.group_send(
-                f'user.{user.id}',
-                {'type': 'channel_message', 'message': message}
-            )
-
-        # Dispatch or group == __all__ to broadcast
-        elif group:
-            # Self to a specific group
-            await self.channel_layer.group_send(
-                group,
-                {'type': 'channel_message', 'message': message}
-            )
-
-        # Reflect
-        else:
-            # Self to current thread ~= the connected user
-            await super().send(text_data=message)
-
-    async def encode(self, message):
-        return json.dumps(message, cls=JSONEncoder)
+    async def lazy_send(self, *args, **kwargs):
+        kwargs['hash'] = self.hash
+        await send(*args, **kwargs)
 
     # Receive message from the group
     async def channel_message(self, message):

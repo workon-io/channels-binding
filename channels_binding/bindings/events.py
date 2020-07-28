@@ -1,7 +1,9 @@
 from channels.db import database_sync_to_async
 from django.forms import modelform_factory
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from ..utils import (
-    bind, db_sync, sync
+    bind, db_sync, sync, send, send_sync
 )
 
 from . import settings as self_settings
@@ -21,6 +23,8 @@ class AsyncSearchModelBinding(object):
         queryset = self.filter_queryset(queryset, data)
         queryset = self.paginate(queryset, data)
         search_data = self.serialize_queryset(queryset, data)
+        if hasattr(self, 'get_search_extra_data'):
+            search_data.update(self.get_search_extra_data(queryset, data))
         return search_data
 
     @bind('search')
@@ -30,11 +34,19 @@ class AsyncSearchModelBinding(object):
 
 class AsyncRetrieveModelBinding(object):
 
+    @classmethod
+    def _post_save_retrieve(cls, sender, instance, created, *args, **kwargs):
+        print('----=> _post_save_retrieve', cls, sender, instance)
+        retrieve_data = cls.serialize(cls, instance, {})
+        send_sync('retrieve', retrieve_data, stream=cls.stream, group=cls.stream)
+
     @database_sync_to_async
-    def get_retrieve_data(self, data):
-        instance = self.get_object(data)
+    def get_retrieve_data(self, data, instance=None):
+        instance = instance or self.get_object(data)
         retrieve_data = self.serialize(instance, data)
         retrieve_data.update(id=instance.pk)
+        if hasattr(self, 'get_retrieve_extra_data'):
+            retrieve_data.update(self.get_retrieve_extra_data(instance, data))
         return retrieve_data
 
     @bind('retrieve')
@@ -45,12 +57,11 @@ class AsyncRetrieveModelBinding(object):
 class AsyncSaveModelBinding(object):
 
     @database_sync_to_async
-    def get_save_data_form(self, data):
-        form = self.get_form(data)
-        if self.form_is_valid(form, data):
-            self.save_form(form, data)
-        save_data = self.serialize_form(form, data)
-        return save_data, form
+    def get_save_data(self, data):
+        if self.form_is_valid(self.form, data):
+            self.save_form(self.form, data)
+        save_data = self.serialize_form(self.form, data)
+        return save_data
 
     def form_is_valid(self, form, data):
         return form.is_valid()
@@ -61,6 +72,7 @@ class AsyncSaveModelBinding(object):
     def save_form(self, form, data):
         return form.save()
 
+    @database_sync_to_async
     def get_form(self, data):
         instance = self.get_object(data)
         fields = self.get_form_fields(data)
@@ -75,7 +87,8 @@ class AsyncSaveModelBinding(object):
 
     @bind('save')
     async def save(self, data, *args, **kwargs):
-        save_data, form = await self.get_save_data_form(data)
+        self.form = await self.get_form(data)
+        save_data = await self.get_save_data(data)
         await self.reflect('save', save_data, *args, **kwargs)
-        if not form.errors:
+        if not self.form.errors:
             await self.dispatch('retrieve', await self.get_retrieve_data(data), *args, **kwargs)

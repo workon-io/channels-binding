@@ -1,3 +1,5 @@
+from django.db.models.signals import post_save
+
 __all__ = [
     'RegisteredBindingMetaClass',
     'registered_binding_classes',
@@ -20,6 +22,13 @@ class RegisteredBindingMetaClass(type):
                 stream = f'{binding_class.model._meta.app_label}.{binding_class.model._meta.object_name}'
             binding_class.stream = stream
             binding_class._registred_actions = {}
+
+            if (
+                binding_class.model and
+                getattr(binding_class, 'post_save_retrieve', False) == True and
+                hasattr(binding_class, '_post_save_retrieve')
+            ):
+                post_save.connect(binding_class._post_save_retrieve, sender=binding_class.model)
 
             for method_name in dir(binding_class):
                 method = getattr(binding_class, method_name)

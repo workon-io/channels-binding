@@ -17,7 +17,8 @@ from .events import (
     AsyncSaveModelBinding,
 )
 from ..utils import (
-    bind
+    bind,
+    send,
 )
 
 __all__ = [
@@ -36,16 +37,16 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
         self.user = consumer.user
 
     # Respond to the current socket
-    async def send(self, event, *args, **kwargs):
-        stream = kwargs.get('stream', self.stream) or self.stream
-        await self.consumer.send(f'{stream}.{event}', *args, **kwargs)
+
+    async def send(self, *args, **kwargs):
+        kwargs['binding'] = self
+        await self.consumer.lazy_send(*args, **kwargs)
 
     # Respond to the current socket
     async def reflect(self, *args, **kwargs):
         await self.send(*args, **kwargs)
 
     # Respond to the current streamed group attached sockets
-
     async def dispatch(self, *args, **kwargs):
         await self.send(*args, group=kwargs.get('stream', self.stream), **kwargs)
 

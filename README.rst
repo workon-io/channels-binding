@@ -84,8 +84,6 @@ Getting Started
 
 -  Add ``channels-binding`` to requirements.txt
 
--  Or install with pip 
-
 .. code:: bash
 
   pip install channels-binding

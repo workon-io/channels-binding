@@ -51,10 +51,12 @@ class AsyncModelBinding(object):
         paginator = Paginator(queryset, max(10, min(100, int(limit))))
         return paginator.get_page(page)
 
+    __object = None
+
     def get_object(self, data):
-        print(data)
         pk = data.get(self.data_pk, None)
         try:
-            return self.model.objects.get(pk=pk)
+            self.object = self.model.objects.get(pk=pk)
         except self.model.DoesNotExist:
             raise Exception(f'{self.stream} pk:{pk} Does Not Exist')
+        return self.object
