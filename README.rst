@@ -1,32 +1,33 @@
-Channels Bindins API
+Channels Binding API
 ------------
 
-Channels Binding exposes an JSON API streaming system across Websocket or HTTP Rest in very few code lines, with a very simple and verboseless exchange structure.
+Channels Binding exposes an JSON API streaming system over `channels <https://github.com/django/channels>`_, in very few code lines, with a very simple and verboseless exchange structure, where each django Models would be easily binded and come with native basics operations like 'retrieve', 'search', 'update', 'create', 'delete' and subscription
+We could made the comparaison with django restframework with the REST system.
 
 - `Gettings Started <#getting-started>`__
 
 Capabilities
 ------------
-- `Both Async or Sync Consumers <#getting-started>`__
-- Both HTTP Rest or WS API
 - Full support of 'retrieve', 'search', 'list', 'update', 'create', 'save', 'delete', 'subscribe' events
-- Support of Hashed events for targeted subscribing
+- Support of Hashed events for targeted subscribers (example: 2 lists on the same stream/event/model but with different filtering)
 - Auto channels subscribing groups of interest 'retrieve', 'list', 'delete'
-- Compatible with Django restframework serializers
-- Easy ways to add custom bindings events throught decorators
+- Custom bindings events through decorators
+- Compatible with Django restframework serializers (soon ready)
+- Both Async or Sync Consumers (not yet)
+- Both HTTP Rest or WS API  (not yet)
 
 Exchanges Structure
 ------------
 
 .. code:: javascript
 
-    SEND => {
+    SELF SEND => {
         event: "auth.User.search",
         data: {
             page: 2
         }
     }
-    RECEIVE => {
+    SELF RECEIVE => {
         event: "auth.User.search",
         data: { 
             page: 2,
@@ -40,13 +41,13 @@ Exchanges Structure
         }
     }
 
-    SEND => {
+    SELF SEND => {
         event: "auth.User.retrieve",
         data: { 
             id: 5763 
         }
     }
-    RECEIVE => {
+    SELF RECEIVE => {
         event: "auth.User.retrieve",
         data: { 
             id: 5763,
@@ -56,20 +57,20 @@ Exchanges Structure
         }
     }
 
-    SEND => {
-        event: "auth.User.save",
+    SELF SEND => {
+        event: "auth.User.update",
         data: { 
             id: 5763,
             username: "Changed Username"
         }
     }
-    RECEIVE => {
-        event: "auth.User.save",
+    SELF RECEIVE => {
+        event: "auth.User.update",
         data: { 
             success: true
         }
     }
-    RECEIVE => {
+    GROUP RECEIVE => {
         event: "auth.User.retrieve",
         data: { 
             id: 5763,
@@ -81,6 +82,8 @@ Exchanges Structure
 
 Getting Started
 ---------------
+
+-  Assume that you have already django and channels>=2.0.0 installed
 
 -  Add ``channels-binding`` to requirements.txt
 
@@ -140,14 +143,24 @@ Getting Started
 
     # apps/your_app/bindings.py
 
-    from .models import MyModel
+    from channels_binding.consumers import AsyncConsumer
+    from .models import YourModel
 
-    class Binding(AsyncBinding):
+    '''
+        All bindings in apps/*/bindings.py or app/bindings/*.py are auto discovered, like models.py
+    '''
+    class YourModelBinding(AsyncBinding):
 
-        model = MyModel
+        model = YourModel
+        # stream = by default '{app_name.model_name}' if model is set
+        # permission_class = by default None (may change in future)
+        # serializer_class = by default None (soon compatible with restframwork serializer)
+        # queryset = by default YourModel.objects.all()
+        # page_size = by default 25 rows for the 'search' and 'list' events
+        # post_save_retrieve = by default True, if is True, an instance post_save send the 'retrieve' event to all the stream subscribers
 
 
--  Let's start to communicate with Javascript simple websocket
+-  Let's start to communicate with a simple retrieve action on a frontal javascript thirdparty
 
 .. code:: javascript
 
@@ -157,7 +170,7 @@ Getting Started
         /*
            Receive: 
            {  
-                event: "your_app.MyModel.retrieve",
+                event: "your_app.YourModel.retrieve",
                 data: { 
                     id: 5763,
                     ...someData
@@ -166,7 +179,7 @@ Getting Started
         */
     }
     ws.send(JSON.stringify({
-        event: "your_app.MyModel.retrieve",
+        event: "your_app.YourModel.retrieve",
         data: { 
             id: 5763 
         }
