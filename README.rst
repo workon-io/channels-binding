@@ -3,7 +3,8 @@ Channels Bindins API
 
 Channels Binding exposes an JSON API streaming system across Websocket or HTTP Rest in very few code lines, with a very simple and verboseless exchange structure.
 
-### Capabilities
+Capabilities
+------------
 - Both Async or Sync Consumers
 - Both HTTP Rest or WS API
 - Full support of 'retrieve', 'search', 'list', 'update', 'create', 'save', 'delete', 'subscribe' events
@@ -155,18 +156,16 @@ Getting Started
         /*
            Receive: 
            {  
-                event: "auth.User.retrieve",
+                event: "your_app.MyModel.retrieve",
                 data: { 
                     id: 5763,
-                    username: "Admin",
-                    email: "admin@admin.com",
-                    ...andMoreDetails
+                    ...someData
                 }
            }     
         */
     }
     ws.send(JSON.stringify({
-        event: "auth.User.retrieve",
+        event: "your_app.MyModel.retrieve",
         data: { 
             id: 5763 
         }
