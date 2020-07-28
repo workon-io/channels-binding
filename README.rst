@@ -143,7 +143,7 @@ Getting Started
 
     # apps/your_app/bindings.py
 
-    from channels_binding.consumers import AsyncConsumer
+    from channels_binding.consumers import AsyncBinding
     from .models import YourModel
 
     '''
