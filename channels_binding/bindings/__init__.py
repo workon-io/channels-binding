@@ -51,7 +51,7 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
 
     # Respond to all sockets
     async def broadcast(self, *args, **kwargs):
-        await self.send(*args, group='__all__')
+        await self.send(*args, group='__all__', **kwargs)
 
     # Respond to the current streamed group attached sockets
     async def subscribe(self, group=None):

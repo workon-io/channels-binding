@@ -14,6 +14,7 @@ class AsyncModelBinding(object):
     # mark as abstract
     model = None
     lookup_field = 'pk'
+    data_pk = 'id'
     page_size = 25
     model_form = None
     fields = []  # hack to pass cls.register() without ValueError
@@ -24,6 +25,19 @@ class AsyncModelBinding(object):
                 return self.model.objects.all()
         else:
             return self.queryset.all()
+
+    def filter_in(self, queryset, name, data, lookup=None):
+        if name in data:
+            value = data[name]
+            if isinstance(value, list):
+                if len(value):
+                    return queryset.filter(**{f'{lookup or name}__in': value})
+                else:
+                    return queryset
+            else:
+                return queryset.filter(**{f'{lookup or name}': value})
+        else:
+            return queryset
 
     def filter_queryset(self, queryset, data):
         return queryset
@@ -38,7 +52,9 @@ class AsyncModelBinding(object):
         return paginator.get_page(page)
 
     def get_object(self, data):
+        print(data)
+        pk = data.get(self.data_pk, None)
         try:
-            return self.model.objects.get(pk=data.get('id', None))
+            return self.model.objects.get(pk=pk)
         except self.model.DoesNotExist:
-            raise Exception(f'{self.stream} Does Not Exist')
+            raise Exception(f'{self.stream} pk:{pk} Does Not Exist')

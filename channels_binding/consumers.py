@@ -85,26 +85,31 @@ class AsyncConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         try:
             data = json.loads(text_data)
-            event = data['event']
+            event_hash = data['event'].split('#', 1)
+            event = event_hash[0]
+            hash = event_hash[-1] if len(event_hash) == 2 else None
             payload = data.get('data', {})
             events = registered_binding_events.get(event, [])
             counter = 0
             for binding_class, method_name in events:
                 binding = self.bindings_by_class.get(binding_class, None)
                 if binding:
-                    await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from sfront
+                    await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, dict):
                         payload = {}
-                    await getattr(binding, method_name)(payload)
+                    await getattr(binding, method_name)(payload, hash=hash)
                     counter += 1
             if not counter:
-                await self.send('error', f'No binding found for {event}')
+                await self.send('error', f'No binding found for {event}#{hash}')
         except Exception as e:
             logger.error(traceback.format_exc())
             await self.send('error', traceback.format_exc())
 
     # Send a event message
-    async def send(self, event, data, group=None, user=None):
+    async def send(self, event, data, group=None, user=None, hash=None):
+
+        if hash:
+            event = f'{event}#{hash}'
         message = await self.encode({'event': event, 'data': data})
         # Private
         if user:
