@@ -38,7 +38,7 @@ setuptools.setup(
     keywords="channels api binding websocket rest django",
     url="https://pypi.org/project/channels-binding",
     # packages=['tests'],
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
