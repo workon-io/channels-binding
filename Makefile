@@ -14,7 +14,7 @@ deploy_major:
 	make push
 
 push:
-	git push
+	git push --tags
 
 pypi_upload:
 	python3 setup.py sdist bdist_wheel
