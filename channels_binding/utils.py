@@ -24,10 +24,12 @@ async def encode_json(message):
     return json.dumps(message, cls=JSONEncoder)
 
 
-async def send(event, data, stream=None, hash=None, group=None, user=None, binding=None):
+async def send(event, data, stream=None, hash=None, group=None, user=None, consumer=None, binding=None):
     # Send a event message
     if binding:
         layer = binding.consumer.channel_layer
+    elif consumer:
+        layer = consumer.channel_layer
     else:
         layer = get_channel_layer()  # TODO: cache it !
     if not stream and binding:
@@ -38,6 +40,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, bindi
         event = f'{event}#{hash}'
     message = await encode_json({'event': event, 'data': data})
     print('----=> SEND', event, group)
+
     # Dispatch or group == __all__ to broadcast
     if group:
         # Self to a specific group
@@ -45,6 +48,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, bindi
             group,
             {'type': 'channel_message', 'message': message}
         )
+
     # Private
     elif user:
         # Self to a specific user
@@ -52,10 +56,16 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, bindi
             f'user.{user.id}',
             {'type': 'channel_message', 'message': message}
         )
+
     # Reflect to the current binding
     elif binding:
         # Self to current thread ~= the connected user
         await binding.consumer.send(text_data=message)
+
+    # Reflect to the current consumer
+    elif consumer:
+        # Self to current thread ~= the connected user
+        await consumer.send(text_data=message)
 
 
 def send_sync(*args, **kwargs):

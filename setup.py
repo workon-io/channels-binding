@@ -43,7 +43,7 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         'Django>=1.8',
-        'channels>=2.1.3',
+        'channels>=2.0.0',
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",

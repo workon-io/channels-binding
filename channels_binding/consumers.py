@@ -42,19 +42,20 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             if hasattr(auth, 'get_user'):
                 self.user = auth.get_user(self)
                 if self.user:
-                    self.user_id = getattr(self.user, 'pk', getattr(self.user, 'id', getattr(self.user, 'key')))
+                    self.user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
                     if self.user_id:
                         self.user_group_name = f'user.{self.user_id}'
                     break
+        return self.user
 
     async def connect(self):
         try:
-            self.user = self.get_user()
+            self.user = await self.get_user()
             if self.user:
                 self.bindings_by_class = {bc: bc(self) for bc in registered_binding_classes}
                 await self.subscribe('__all__')
                 if self.user_group_name:
-                    await self.subscribe(user_group_name)
+                    await self.subscribe(self.user_group_name)
                 await self.accept()
                 # await self.send('auth.roles', self.user.roles)
             else:
@@ -102,6 +103,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await getattr(binding, method_name)(payload)
                     counter += 1
             if not counter:
+                logger.warning(f'No binding found for {event}#{self.hash}')
                 await self.lazy_send('error', f'No binding found for {event}#{self.hash}')
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -110,6 +112,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
     # Send a event message
     async def lazy_send(self, *args, **kwargs):
         kwargs['hash'] = self.hash
+        kwargs['consumer'] = self
         await send(*args, **kwargs)
 
     # Receive message from the group

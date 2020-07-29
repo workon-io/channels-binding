@@ -1,9 +1,14 @@
 Channels Binding API
 --------------------
 
-Channels Binding exposes an JSON API streaming system over `channels <https://github.com/django/channels>`_, in very few code lines, with a very simple and verboseless exchange structure, where each django Models would be easily binded and come with native basics operations like 'retrieve', 'search', 'update', 'create', 'delete' and subscription
+Channels Binding exposes an JSON API streaming system over `channels <https://github.com/django/channels>`_,
+in very few code lines, with a very simple and verboseless exchange structure, 
+where each django Models would be easily binded and come with native basics operations like 'retrieve', 'search', 'update', 'create', 'delete' and subscription.
 We could made the comparaison with django restframework with the REST system.
 
+- `Demo (soon)`
+- `Capabilities <#capabilities>`__
+- `Exchanges Structure Overviews <#exchanges-structure-overviews>`__
 - `Gettings Started <#getting-started>`__
 
 Capabilities
@@ -16,8 +21,8 @@ Capabilities
 - Both Async or Sync Consumers (not yet)
 - Both HTTP Rest or WS API  (not yet)
 
-Exchanges Structure
--------------------
+Exchanges Structure Overviews
+-----------------------------
 
 .. code:: javascript
 
@@ -83,7 +88,7 @@ Exchanges Structure
 Getting Started
 ---------------
 
--  Assume that you have already django and channels>=2.0.0 installed
+-  Assume that you have already django>=1.8 and channels>=2.0.0 installed
 
 -  Add ``channels-binding`` to requirements.txt
 
@@ -107,7 +112,7 @@ Getting Started
 
     CHANNEL_LAYERS = {
         'default': {
-            ...some channels config
+            ...someChannelsConfig
         },
     }
     CHANNELS_BINDING = {
