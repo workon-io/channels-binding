@@ -10,6 +10,7 @@ We could made the comparaison with django restframework with the REST system.
 - `Capabilities <#capabilities>`__
 - `Exchanges Structure Overviews <#exchanges-structure-overviews>`__
 - `Gettings Started <#getting-started>`__
+- `Custom Events Binding <#custom-events-binding>`__
 
 Capabilities
 ------------
