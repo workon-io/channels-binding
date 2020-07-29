@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
 __all__ = [
     'RegisteredBindingMetaClass',
@@ -35,7 +35,7 @@ class RegisteredBindingMetaClass(type):
                 getattr(binding_class, 'post_delete_connect', False) == True and
                 hasattr(binding_class, 'post_delete')
             ):
-                post_save.connect(binding_class.post_delete, sender=binding_class.model)
+                post_delete.connect(binding_class.post_delete, sender=binding_class.model)
 
             for method_name in dir(binding_class):
                 method = getattr(binding_class, method_name)
