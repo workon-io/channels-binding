@@ -33,7 +33,7 @@ setuptools.setup(
     # python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     author="Damien Autrusseau",
     author_email="damien.autrusseau@gmail.com",
-    description="Channels Binding exposes an JSON API streaming system over django channels, in very few code lines, with a very simple and verboseless exchange structure, where each django Models would be easily binded and come with native basics operations like 'retrieve', 'search', 'update', 'create', 'delete' and subscription We could made the comparaison with django restframework with the REST system.",
+    description="a RESTful API Streaming system over django channels, with model binding automations",
     license="MIT",
     keywords="channels api binding stream models json bindings framework websocket restframework django",
     url="https://github.com/workon-io/channels-binding",
