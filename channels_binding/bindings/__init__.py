@@ -15,6 +15,7 @@ from .events import (
     AsyncSearchModelBinding,
     AsyncRetrieveModelBinding,
     AsyncSaveModelBinding,
+    AsyncDeleteModelBinding,
 )
 from ..utils import (
     bind,
@@ -70,5 +71,6 @@ class AsyncBinding(
     AsyncSearchModelBinding,
     AsyncRetrieveModelBinding,
     AsyncSaveModelBinding,
+    AsyncDeleteModelBinding,
 ):
     pass

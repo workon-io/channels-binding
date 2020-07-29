@@ -201,11 +201,7 @@ Custom Events Binding
     # apps/your_app/bindings.py
 
     from channels_binding.consumers import AsyncBinding, bind
-    from .models import YourModel
-
-    '''
-        All bindings in apps/*/bindings.py or app/bindings/*.py are auto discovered, like models.py
-    '''
+    
     class YourCustomBinding(AsyncBinding):
 
         stream = 'custom_stream'

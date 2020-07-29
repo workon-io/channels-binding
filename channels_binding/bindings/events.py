@@ -12,6 +12,7 @@ __all__ = [
     'AsyncSearchModelBinding',
     'AsyncRetrieveModelBinding',
     'AsyncSaveModelBinding',
+    'AsyncDeleteModelBinding'
 ]
 
 
@@ -34,14 +35,6 @@ class AsyncSearchModelBinding(object):
 
 class AsyncRetrieveModelBinding(object):
 
-    post_save_retrieve = True
-
-    @classmethod
-    def _post_save_retrieve(cls, sender, instance, created, *args, **kwargs):
-        print('----=> _post_save_retrieve', cls, sender, instance)
-        retrieve_data = cls.serialize(cls, instance, {})
-        send_sync('retrieve', retrieve_data, stream=cls.stream, group=cls.stream)
-
     @database_sync_to_async
     def get_retrieve_data(self, data, instance=None):
         instance = instance or self.get_object(data)
@@ -58,11 +51,24 @@ class AsyncRetrieveModelBinding(object):
 
 class AsyncSaveModelBinding(object):
 
+    post_save_connect = True
+
+    @classmethod
+    def post_save(cls, sender, instance, created, *args, **kwargs):
+        print('----=> _post_save_retrieve', cls, sender, instance)
+        cls.user = None
+        retrieve_data = cls.serialize(cls, instance, {})
+        retrieve_data.update(id=instance.pk)
+        if hasattr(cls, 'get_retrieve_extra_data'):
+            retrieve_data.update(cls.get_retrieve_extra_data(instance, {}))
+        send_sync('retrieve', retrieve_data, stream=cls.stream, group=cls.stream)
+
     @database_sync_to_async
     def get_save_data(self, data):
         if self.form_is_valid(self.form, data):
             self.save_form(self.form, data)
         save_data = self.serialize_form(self.form, data)
+        save_data.update(id=self.form.instance.pk)
         return save_data
 
     def form_is_valid(self, form, data):
@@ -75,8 +81,8 @@ class AsyncSaveModelBinding(object):
         return form.save()
 
     @database_sync_to_async
-    def get_form(self, data):
-        instance = self.get_object(data, create=True)
+    def get_form(self, data, **kwargs):
+        instance = self.get_object(data, create=kwargs.get('create', True))
         fields = self.get_form_fields(data)
         for name in fields:
             if name not in data:
@@ -89,24 +95,43 @@ class AsyncSaveModelBinding(object):
 
     @bind('save')
     async def save(self, data, *args, **kwargs):
-        self.form = await self.get_form(data)
+        self.form = await self.get_form(data, create=kwargs.get('create', True))
         save_data = await self.get_save_data(data)
         await self.reflect('save', save_data, *args, **kwargs)
-        if not self.form.errors:
+        if not self.form.errors and not self.post_save_connect:
             await self.dispatch('retrieve', await self.get_retrieve_data(data, instance=self.form.instance), *args, **kwargs)
 
     @bind('create')
     async def create(self, data, *args, **kwargs):
-        self.form = await self.get_form(data)
-        save_data = await self.get_save_data(data)
-        await self.reflect('save', save_data, *args, **kwargs)
-        # if not self.form.errors:
-        #     await self.dispatch('retrieve', await self.get_retrieve_data(data), *args, **kwargs)
+        await self.save(data, create=True)
 
     @bind('update')
     async def update(self, data, *args, **kwargs):
-        self.form = await self.get_form(data)
-        save_data = await self.get_save_data(data)
-        await self.reflect('save', save_data, *args, **kwargs)
+        await self.save(data, create=False)
+
+
+class AsyncDeleteModelBinding(object):
+
+    post_delete_connect = True
+
+    @classmethod
+    def post_delete(cls, sender, instance, *args, **kwargs):
+        print('----=> _post_delete_retrieve', cls, sender, instance)
+        cls.user = None
+        delete_data = {'success': True, 'id': instance.pk}
+        send_sync('delete', delete_data, stream=cls.stream, group=cls.stream)
+
+    @database_sync_to_async
+    def get_delete_data(self, data):
+        instance = self.get_object(data)
+        pk = instance.pk
+        instance.delete()
+        return {'success': True, 'id': pk}
+
+    @bind('delete')
+    async def delete(self, data, *args, **kwargs):
+        delete_data = await self.get_delete_data(data)
+        if not self.post_delete_connect:
+            await self.reflect('delete', delete_data, *args, **kwargs)
         # if not self.form.errors:
         #     await self.dispatch('retrieve', await self.get_retrieve_data(data, instance=self.form), *args, **kwargs)

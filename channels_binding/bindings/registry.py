@@ -25,10 +25,17 @@ class RegisteredBindingMetaClass(type):
 
             if (
                 binding_class.model and
-                getattr(binding_class, 'post_save_retrieve', False) == True and
-                hasattr(binding_class, '_post_save_retrieve')
+                getattr(binding_class, 'post_save_connect', False) == True and
+                hasattr(binding_class, 'post_save')
             ):
-                post_save.connect(binding_class._post_save_retrieve, sender=binding_class.model)
+                post_save.connect(binding_class.post_save, sender=binding_class.model)
+
+            if (
+                binding_class.model and
+                getattr(binding_class, 'post_delete_connect', False) == True and
+                hasattr(binding_class, 'post_delete')
+            ):
+                post_save.connect(binding_class.post_delete, sender=binding_class.model)
 
             for method_name in dir(binding_class):
                 method = getattr(binding_class, method_name)
