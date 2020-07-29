@@ -5,7 +5,7 @@ import setuptools
 CURRENT_PYTHON = sys.version_info[:2]
 REQUIRED_PYTHON = (2, 7)
 EXCLUDE_FROM_PACKAGES = [
-    'tests', 'build', 'dist',
+    'build', 'dist',
 ]
 if CURRENT_PYTHON < REQUIRED_PYTHON:
     sys.stderr.write("""
@@ -33,13 +33,12 @@ setuptools.setup(
     # python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     author="Damien Autrusseau",
     author_email="damien.autrusseau@gmail.com",
-    description="Channels API Bindings system",
+    description="Channels Binding exposes an JSON API streaming system over django channels, in very few code lines, with a very simple and verboseless exchange structure, where each django Models would be easily binded and come with native basics operations like 'retrieve', 'search', 'update', 'create', 'delete' and subscription We could made the comparaison with django restframework with the REST system.",
     license="MIT",
-    keywords="channels api binding websocket rest django",
-    url="https://pypi.org/project/channels-binding",
+    keywords="channels api binding stream models json bindings framework websocket restframework django",
+    url="https://github.com/workon-io/channels-binding",
     # packages=['tests'],
     long_description=read('README.rst'),
-    long_description_content_type="text/markdown",
     packages=setuptools.find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     install_requires=[
@@ -48,6 +47,10 @@ setuptools.setup(
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         "Programming Language :: Python",
         "Topic :: Utilities",
         "License :: OSI Approved :: Apache Software License",

@@ -42,5 +42,5 @@ replace:
 	sudo cp -r ./channels_binding /home/dev/tools.hub/api/clearversion/app/channels_binding
 	sudo rm -rf /home/dev/tools.hub/api/component/app/channels_binding
 	sudo cp -r ./channels_binding /home/dev/tools.hub/api/component/app/channels_binding
-	sudo rm -rf /home/dev/tools.hub/api/edoc/app/channels_binding
-	sudo cp -r ./channels_binding /home/dev/tools.hub/api/edoc/app/channels_binding
+	sudo rm -rf /home/dev/edoc/webapp/app/channels_binding
+	sudo cp -r ./channels_binding /home/dev/edoc/webapp/app/channels_binding

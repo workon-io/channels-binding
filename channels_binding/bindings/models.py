@@ -53,10 +53,13 @@ class AsyncModelBinding(object):
 
     __object = None
 
-    def get_object(self, data):
+    def get_object(self, data, create=False):
         pk = data.get(self.data_pk, None)
         try:
             self.object = self.model.objects.get(pk=pk)
-        except self.model.DoesNotExist:
-            raise Exception(f'{self.stream} pk:{pk} Does Not Exist')
+        except self.model.DoesNotExist as e:
+            if create:
+                self.object = self.model()
+            else:
+                raise Exception(f'{self.stream} pk:{pk} Does Not Exist')
         return self.object

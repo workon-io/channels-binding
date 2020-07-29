@@ -25,7 +25,7 @@ class AsyncSerializerBinding(object):
 
     def serialize_queryset(self, queryset, *args, **kwargs):
         if not self.serializer_class:
-            rows = [self.serialize(inst, *args, **kwargs) for inst in queryset]
+            rows = [dict(**self.serialize(inst, *args, **kwargs), id=inst.id) for inst in queryset]
             return dict(
                 page=queryset.number,
                 limit=queryset.paginator.per_page,

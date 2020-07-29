@@ -89,7 +89,6 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             event_hash = data['event'].split('#', 1)
             event = event_hash[0]
             self.hash = event_hash[-1] if len(event_hash) == 2 else None
-            print('----=> receive', event, self.hash)
             payload = data.get('data', {})
             events = registered_binding_events.get(event, [])
             counter = 0
@@ -99,13 +98,14 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, dict):
                         payload = {}
+                    print('----=> receive', event_hash, '<=TO=>', method_name)
                     await getattr(binding, method_name)(payload)
                     counter += 1
             if not counter:
-                await self.send('error', f'No binding found for {event}#{self.hash}')
+                await self.lazy_send('error', f'No binding found for {event}#{self.hash}')
         except Exception as e:
             logger.error(traceback.format_exc())
-            await self.send('error', traceback.format_exc())
+            await self.lazy_send('error', traceback.format_exc())
 
     # Send a event message
     async def lazy_send(self, *args, **kwargs):
