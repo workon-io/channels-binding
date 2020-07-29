@@ -189,3 +189,80 @@ Getting Started
             id: 5763 
         }
     }))
+
+Custom Events Binding
+----------------------
+
+-  Add a full custom binding with 
+
+.. code:: python
+
+    # apps/your_app/bindings.py
+
+    from channels_binding.consumers import AsyncBinding, bind
+    from .models import YourModel
+
+    '''
+        All bindings in apps/*/bindings.py or app/bindings/*.py are auto discovered, like models.py
+    '''
+    class YourCustomBinding(AsyncBinding):
+
+        stream = 'custom_stream'
+
+        @bind('custom_event')
+        async def handle_custom_event(self, data):
+
+            sender = data['sender']
+
+            # Direct reflect the reponse to the current socket pipe
+            await self.reflect('custom_event', {
+                'msg': f'This a reflected response for {sender}'
+            })
+
+            # Send an event to this stream subscribers
+            await self.dispatch('custom_group_event', {
+                'msg': f'This a dispatched response to the custom_stream subscriber from {sender}'
+            })
+
+            # Send an event to this stream subscribers
+            await self.broadcast('custom_all_event', {
+                'msg': f'This a dispatched response to the all layers from {sender}'
+            })
+
+-  Let's try this on a frontal javascript thirdparty
+
+.. code:: javascript
+
+    var ws = new WebSocket("ws://" + window.location.host + "/")
+    ws.onmessage = function(e){
+        console.log(e.data)
+        /*
+           Receive (reflected): 
+           {  
+                event: "custom_stream.custom_event",
+                data: { 
+                    msg: 'This a reflected response for me!!!'
+                }
+           }   
+           Receive (from group to all "custom_stream" subscribers): 
+           {  
+                event: "custom_stream.custom_group_event",
+                data: { 
+                    msg: 'This a dispatched response to the custom_stream subscriber from me!!!'
+                }
+           }    
+           Receive (broadcasted to all): 
+           {  
+                event: "custom_stream.custom_all_event",
+                data: { 
+                    msg: 'This a dispatched response to the all layers from me!!!'
+                }
+           }      
+        */
+    }
+    ws.send(JSON.stringify({
+        event: "custom_stream.custom_event",
+        data: { 
+            sender: 'me!!!' 
+        }
+    }))
