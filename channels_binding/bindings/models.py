@@ -51,8 +51,6 @@ class AsyncModelBinding(object):
         paginator = Paginator(queryset, max(10, min(100, int(limit))))
         return paginator.get_page(page)
 
-    __object = None
-
     def get_object(self, data, create=False):
         pk = data.get(self.data_pk, None)
         try:

@@ -25,14 +25,14 @@ class RegisteredBindingMetaClass(type):
 
             if (
                 binding_class.model and
-                getattr(binding_class, 'post_save_connect', False) == True and
+                getattr(binding_class, 'post_save_connect', False) and
                 hasattr(binding_class, 'post_save')
             ):
                 post_save.connect(binding_class.post_save, sender=binding_class.model)
 
             if (
                 binding_class.model and
-                getattr(binding_class, 'post_delete_connect', False) == True and
+                getattr(binding_class, 'post_delete_connect', False) and
                 hasattr(binding_class, 'post_delete')
             ):
                 post_delete.connect(binding_class.post_delete, sender=binding_class.model)
