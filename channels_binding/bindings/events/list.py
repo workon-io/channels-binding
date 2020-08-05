@@ -21,7 +21,7 @@ def async_list_data(bind, data):
     return list_data
 
 
-class AsyncSearchModelBinding(object):
+class AsyncListModelBinding(object):
 
     @bind('list')
     async def list(self, data, *args, **kwargs):

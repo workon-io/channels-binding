@@ -28,11 +28,11 @@ class AsyncSearchModelBinding(object):
     async def search(self, data, *args, **kwargs):
         await self.reflect(f'search', await async_search_data(self, data), *args, **kwargs)
 
-    def serialize_search(self, queryset, *args, **kwargs):
+    def serialize_search(self, queryset, data):
         if not self.serializer_class:
             rows = []
             for inst in queryset:
-                row = self.serialize_search_row(inst, *args, **kwargs)
+                row = self.serialize_search_row(inst, data)
                 if 'id' not in row:
                     row['id'] = inst.pk
                 rows.append(row)
@@ -43,7 +43,7 @@ class AsyncSearchModelBinding(object):
                 rows=rows
             )
         else:
-            return self.serializer_class(queryset, *args, **kwargs).data
+            return self.serializer_class(queryset, datas).data
 
-    def serialize_search_row(self, instance, *args, **kwargs):
-        return self.serialize_retrieve(instance, *args, **kwargs)
+    def serialize_search_row(self, instance, data):
+        return self.serialize_retrieve(instance, data)

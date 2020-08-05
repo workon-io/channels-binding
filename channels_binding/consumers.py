@@ -3,6 +3,7 @@ import os
 import requests
 import traceback
 import logging
+import datetime
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -97,9 +98,10 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                 binding = self.bindings_by_class.get(binding_class, None)
                 if binding:
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
-                    if not isinstance(payload, dict):
+                    if not isinstance(payload, (list, dict)):
                         payload = {}
                     print('----=> receive', event_hash, '<=TO=>', method_name)
+                    binding.today = datetime.date.today()
                     await getattr(binding, method_name)(payload)
                     counter += 1
             if not counter:

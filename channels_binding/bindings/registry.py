@@ -23,6 +23,8 @@ class RegisteredBindingMetaClass(type):
             binding_class.stream = stream
             binding_class._registred_actions = {}
 
+            binding_class._lazy = binding_class()
+
             if (
                 binding_class.model and
                 getattr(binding_class, 'post_save_connect', False) and

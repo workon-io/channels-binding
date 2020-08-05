@@ -1,4 +1,5 @@
 import traceback
+import datetime
 import os
 from channels.db import database_sync_to_async
 from django.conf import settings
@@ -16,15 +17,20 @@ from .events import (
     AsyncRetrieveModelBinding,
     AsyncSaveModelBinding,
     AsyncDeleteModelBinding,
+    AsyncFormModelBinding,
+    AsyncSignalsModelBinding,
 )
 from ..utils import (
     bind,
     send,
 )
 
+async_db = database_sync_to_async
+
 __all__ = [
     'AsyncBinding',
-    'bind'
+    'bind',
+    'async_db'
 ]
 
 
@@ -33,17 +39,22 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
     stream = None
     permission_classes = ()
 
-    def __init__(self, consumer):
+    def __init__(self, consumer=None):
         self.consumer = consumer
-        self.user = consumer.user
+        self.user = consumer.user if consumer else None
+        self.today = datetime.date.today()
 
     # Respond to the current socket
 
     async def send(self, *args, **kwargs):
         kwargs['binding'] = self
-        await self.consumer.lazy_send(*args, **kwargs)
+        if self.consumer:
+            await self.consumer.lazy_send(*args, **kwargs)
+        else:
+            await send(*args, **kwargs)
 
     # Respond to the current socket
+
     async def reflect(self, *args, **kwargs):
         await self.send(*args, **kwargs)
 
@@ -57,11 +68,13 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
 
     # Respond to the current streamed group attached sockets
     async def subscribe(self, group=None):
-        await self.consumer.subscribe(group or self.stream)
+        if self.consumer:
+            await self.consumer.subscribe(group or self.stream)
 
     # Respond to the current streamed group attached sockets
     async def unsubscribe(self, group=None):
-        await self.consumer.unsubscribe(group or self.stream)
+        if self.consumer:
+            await self.consumer.unsubscribe(group or self.stream)
 
 
 class AsyncBinding(
@@ -72,5 +85,7 @@ class AsyncBinding(
     AsyncRetrieveModelBinding,
     AsyncSaveModelBinding,
     AsyncDeleteModelBinding,
+    AsyncFormModelBinding,
+    AsyncSignalsModelBinding
 ):
     pass
