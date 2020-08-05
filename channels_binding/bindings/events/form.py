@@ -1,5 +1,5 @@
 from channels.db import database_sync_to_async
-from django.forms import modelform_factory
+from django.forms import modelform_factory, ModelChoiceField, ChoiceField
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from channels_binding.utils import (
@@ -28,6 +28,7 @@ class AsyncFormModelBinding(object):
 
     post_save_connect = True
     form_class = None
+    form_fields = None
 
     @bind('form')
     async def receive_form(self, data, *args, **kwargs):
@@ -36,7 +37,10 @@ class AsyncFormModelBinding(object):
             await self.dispatch('retrieve', await self.serialize_retrieve(self.form.instance, data), *args, **kwargs)
 
     def get_form_fields(self, data):
-        return self.fields
+        if not self.form_fields:
+            return [field.name for field in self.model._meta.get_fields()] if self.model else []
+        else:
+            return self.form_fields
 
     def get_form_kwargs(self, instance, data):
         args = [
@@ -51,9 +55,9 @@ class AsyncFormModelBinding(object):
         instance = self.get_object(data, create=kwargs.get('create', True))
         fields = self.get_form_fields(data)
         kwargs = self.get_form_kwargs(instance, data)
-        for name in fields:
-            if name not in data:
-                data[name] = getattr(instance, name, None)
+        # for name in fields:
+        #     if name not in data:
+        #         data[name] = getattr(instance, name, None)
         if self.model and not self.form_class:
             form = modelform_factory(self.model, fields=fields)(
                 data.get('submit', None),
@@ -73,16 +77,27 @@ class AsyncFormModelBinding(object):
         return form.save()
 
     def serialize_form(self, form, data):
+        fields = []
+        for field in form:
+            type = str(field.field.__class__.__name__)
+            data = dict(
+                name=field.name,
+                label=field.label,
+                type=type,
+                value=field.value(),
+            )
+            print(type)
+            if isinstance(field.field, ModelChoiceField):
+                model_field = field.field.queryset.model  # self.model._meta.get_field(field.name)
+                data['stream'] = f'{model_field._meta.app_label}.{model_field._meta.object_name}'
+
+            elif isinstance(field.field, ChoiceField):
+                data['choices'] = field.field.choices
+            fields.append(data)
+
         return dict(
             errors=form.errors or None,
             success='submit' in data and not form.errors,
-            fields=[
-                dict(
-                    name=field.name,
-                    label=field.label,
-                    type=str(field.field.__class__.__name__),
-                    value=field.value(),
-                )
-                for field in self.form
-            ]
+            object=self.serialize_retrieve(form.instance, data),
+            fields=fields
         )

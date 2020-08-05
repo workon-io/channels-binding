@@ -11,13 +11,10 @@ __all__ = [
 class AsyncModelBinding(object):
 
     queryset = None
-    # mark as abstract
     model = None
     lookup_field = 'pk'
     data_pk = 'id'
     page_size = 25
-    model_form = None
-    fields = []  # hack to pass cls.register() without ValueError
 
     def get_queryset(self, data):
         if not self.queryset:
