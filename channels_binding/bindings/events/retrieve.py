@@ -18,10 +18,17 @@ __all__ = [
 @database_sync_to_async
 def async_retrieve_data(bind, data, instance=None):
     instance = instance or bind.get_object(data, create=True)
-    retrieve_data = bind.serialize_retrieve(instance, data)
-    retrieve_data.update(id=instance.pk)
-    if hasattr(bind, 'serialize_retrieve_extra'):
-        retrieve_data.update(bind.serialize_retrieve_extra(instance, data))
+    if isinstance(instance, list):
+        retrieve_data = []
+        for inst in instance:
+            inst_data = bind.serialize_retrieve(inst, data)
+            inst_data.update(id=inst.pk)
+            retrieve_data.append(inst_data)
+    else:
+        retrieve_data = bind.serialize_retrieve(instance, data)
+        retrieve_data.update(id=instance.pk)
+        if hasattr(bind, 'serialize_retrieve_extra'):
+            retrieve_data.update(bind.serialize_retrieve_extra(instance, data))
     return retrieve_data
 
 
