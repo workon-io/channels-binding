@@ -46,7 +46,7 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
 
     def get_binding(self, stream):
         if self.consumer:
-            return self.bindings_by_stream.get(stream)
+            return self.consumer.bindings_by_stream.get(stream)
         else:
             return self.__class__._lazy_bindings_by_stream.get(stream)
 
