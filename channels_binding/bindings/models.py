@@ -51,7 +51,7 @@ class AsyncModelBinding(object):
     def get_object(self, data, create=False):
         pk = data.get(self.data_pk, None)
         try:
-            self.object = self.model.objects.get(pk=pk)
+            self.object = self.filter_queryset(self.model.objects).get(pk=pk)
         except self.model.DoesNotExist as e:
             if create:
                 self.object = self.model()

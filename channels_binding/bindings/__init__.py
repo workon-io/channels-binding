@@ -44,8 +44,13 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
         self.user = consumer.user if consumer else None
         self.today = datetime.date.today()
 
-    # Respond to the current socket
+    def get_binding(self, stream):
+        if self.consumer:
+            return self.bindings_by_stream.get(stream)
+        else:
+            return self.__class__._lazy_bindings_by_stream.get(stream)
 
+    # Respond to the current socket
     async def send(self, *args, **kwargs):
         kwargs['binding'] = self
         if self.consumer:

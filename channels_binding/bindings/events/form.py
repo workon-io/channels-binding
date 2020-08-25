@@ -89,7 +89,7 @@ class AsyncFormModelBinding(object):
             print(type)
             if isinstance(field.field, ModelChoiceField):
                 model_field = field.field.queryset.model  # self.model._meta.get_field(field.name)
-                data['stream'] = f'{model_field._meta.app_label}.{model_field._meta.object_name}'
+                data['event'] = f'{model_field._meta.app_label}.{model_field._meta.object_name}'
 
             elif isinstance(field.field, ChoiceField):
                 data['choices'] = field.field.choices

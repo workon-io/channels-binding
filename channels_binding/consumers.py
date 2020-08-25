@@ -32,6 +32,8 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         self.hash = None
         self.groups = set('__all__')
         self.actions = {}
+        self.bindings_by_class = {}
+        self.bindings_by_stream = {}
         self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
 
     @database_sync_to_async
@@ -49,11 +51,19 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     break
         return self.user
 
+    def get_binding(self, stream):
+        return self.bindings_by_stream.get(stream)
+
     async def connect(self):
         try:
             self.user = await self.get_user()
             if self.user:
-                self.bindings_by_class = {bc: bc(self) for bc in registered_binding_classes}
+                self.bindings_by_class = {}
+                self.bindings_by_stream = {}
+                for bc in registered_binding_classes:
+                    binding = bc(self)
+                    self.bindings_by_class[bc] = binding
+                    self.bindings_by_stream[binding.stream] = binding
                 await self.subscribe('__all__')
                 if self.user_group_name:
                     await self.subscribe(self.user_group_name)

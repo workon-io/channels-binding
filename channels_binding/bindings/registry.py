@@ -9,6 +9,7 @@ __all__ = [
 
 registered_binding_classes = set()
 registered_binding_events = dict()
+registered_lazy_binding_by_stream = dict()
 
 
 class RegisteredBindingMetaClass(type):
@@ -22,8 +23,9 @@ class RegisteredBindingMetaClass(type):
                 stream = f'{binding_class.model._meta.app_label}.{binding_class.model._meta.object_name}'
             binding_class.stream = stream
             binding_class._registred_actions = {}
-
             binding_class._lazy = binding_class()
+            binding_class._lazy_bindings_by_stream = registered_lazy_binding_by_stream
+            binding_class._lazy_bindings_by_stream[stream] = binding_class._lazy
 
             if (
                 binding_class.model and
