@@ -4,6 +4,13 @@ import re
 import json
 import subprocess
 
+'''
+    requires:
+        python >= 3
+        node
+        npm >= 10
+        pandoc
+'''
 
 npm_packages = [
     'core',
@@ -15,6 +22,14 @@ pypi_packages = [
 ]
 
 if __name__ == "__main__":
+
+    for packages in [npm_packages, pypi_packages]:
+        for package in packages:
+            cwd = "packages/channels-binding-%s" % package
+            print(subprocess.check_output(["pandoc", "README.rst", "-s", "-o", "README.md"]))
+            print(subprocess.check_output(["cp", "LICENSE", cwd]))
+            print(subprocess.check_output(["cp", "README.rst", cwd]))
+            print(subprocess.check_output(["cp", "README.md", cwd]))
 
     try:
         revision = sys.argv[1]
@@ -52,12 +67,6 @@ if __name__ == "__main__":
         if not comment:
             comment = 'autotagging'
         comment = comment.replace('"', '\\"')
-
-        for packages in [npm_packages, pypi_packages]:
-            for package in packages:
-                cwd = "packages/channels-binding-%s" % package
-                print(subprocess.check_output(["cp", "LICENSE", cwd]))
-                print(subprocess.check_output(["cp", "README.rst", cwd]))
 
         # Increments versions
         print(subprocess.check_output(["npm", "version", new_version, "-git-tag-version", "false", "--allow-same-version"]))
