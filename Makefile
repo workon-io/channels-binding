@@ -1,27 +1,11 @@
 deploy:
-	python3 autotag.py minor
-	make pypi_upload
-	make push
+	python3 publish.py patch
 
-deploy_medium:
-	python3 autotag.py medium
-	make pypi_upload
-	make push
+deploy_minor:
+	python3 publish.py minor
 
 deploy_major:
-	python3 autotag.py major
-	make pypi_upload
-	make push
-
-push:
-	git push
-	git push --tags
-
-pypi_upload:
-	rm -r dist/*
-	python3 setup.py sdist bdist_wheel
-	python3 -m twine upload --repository pypi dist/* || echo 'channels-binding is up-to-date'
-
+	python3 publish.py major
 
 develop:
 	sudo pip3 install .

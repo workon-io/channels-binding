@@ -1,4 +1,5 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.db.models.fields.related import ManyToManyField
 
 __all__ = [
     'RegisteredBindingMetaClass',
@@ -33,6 +34,9 @@ class RegisteredBindingMetaClass(type):
                 hasattr(binding_class, 'post_save')
             ):
                 post_save.connect(binding_class.post_save, sender=binding_class.model)
+                for field in binding_class.model._meta.get_fields():
+                    if isinstance(field, ManyToManyField):
+                        m2m_changed.connect(binding_class.m2m_changed, sender=getattr(binding_class.model, field.name).through)
 
             if (
                 binding_class.model and

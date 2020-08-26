@@ -20,6 +20,16 @@ class AsyncSignalsModelBinding(object):
         send_sync('retrieve', retrieve_data, stream=bind.stream, group=bind.stream)
 
     @classmethod
+    def m2m_changed(cls, sender, instance, action, reverse, model, pk_set, *args, **kwargs):
+        if action.startswith('post'):
+            bind = cls._lazy
+            retrieve_data = bind.serialize_retrieve(instance, dict())
+            retrieve_data.update(id=instance.pk)
+            if hasattr(bind, 'serialize_retrieve_extra'):
+                retrieve_data.update(bind.serialize_retrieve_extra(bind, instance, data))
+            send_sync('retrieve', retrieve_data, stream=bind.stream, group=bind.stream)
+
+    @classmethod
     def post_delete(cls, sender, instance, *args, **kwargs):
         bind = cls._lazy
         delete_data = {'success': True, 'id': instance.pk}

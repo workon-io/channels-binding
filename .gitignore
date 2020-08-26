@@ -1,19 +1,25 @@
 # Byte-compiled / optimized / DLL files
+.DS_Store
 __pycache__/
 *.py[cod]
 *$py.class
+node_modules
 
 # C extensions
 *.so
 
 # Distribution / packaging
 .vscode/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
 .Python
 env/
 build/
 tests/
 develop-eggs/
 dist/
+doc/*.html
 downloads/
 eggs/
 .eggs/
@@ -54,6 +60,7 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.log*
 
 # Sphinx documentation
 docs/_build/
