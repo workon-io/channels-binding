@@ -136,7 +136,7 @@ INSTALLED_APPS = (
 ``` {.sourceCode .python}
 CHANNEL_LAYERS = {
     'default': {
-        ...someChannelsConfig
+        # ...someChannelsConfig
     },
 }
 CHANNELS_BINDING = {

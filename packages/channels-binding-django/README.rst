@@ -126,7 +126,7 @@ Getting Started
 
     CHANNEL_LAYERS = {
         'default': {
-            ...someChannelsConfig
+            # ...someChannelsConfig
         },
     }
     CHANNELS_BINDING = {

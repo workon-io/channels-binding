@@ -39,7 +39,12 @@ if __name__ == "__main__":
     version = json.loads(open('package.json', 'r').read()).get('version')
     print('Current version: {}'.format(version))
 
-    has_changes = 'la copie de travail est propre' not in str(subprocess.check_output(["git", "status"]).rstrip())
+    git_status = str(subprocess.check_output(["git", "status"]).rstrip())
+    print(git_status)
+    has_changes = (
+        'la copie de travail est propre' not in git_status and
+        'nothing to commit, working tree clean' not in git_status
+    )
     if has_changes:
 
         major, minor, patch = version.split(".")
