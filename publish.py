@@ -58,7 +58,6 @@ if __name__ == "__main__":
         for package in npm_packages:
             cwd = "packages/channels-binding-%s" % package
             print(subprocess.check_output(["npm", "version", new_version, "-git-tag-version", "false", "--allow-same-version"], cwd=cwd))
-            print(subprocess.check_output(["npm", "publish", "--access", "public"], cwd=cwd))
 
         for package in pypi_packages:
             cwd = "packages/channels-binding-%s" % package
