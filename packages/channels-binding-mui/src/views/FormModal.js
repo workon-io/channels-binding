@@ -44,6 +44,7 @@ const FormModal = (({
     onClose,
     minWidth,
     onSuccess: defaultOnSuccess,
+    onErrors: defaultOnErrors,
     buttons = [],
     Delete,
     DeleteProps = {},
@@ -63,11 +64,17 @@ const FormModal = (({
         defaultOnSuccess && defaultOnSuccess()
         // setOpenSuccessSnack(true)
     }
+    const onErrors = data => {
+        defaultOnErrors && defaultOnErrors()
+        // setOpenSuccessSnack(true)
+    }
     const { fields, submit, success, errors, fetching, ...formData } = useForm({
         stream: stream,
         object: initialObject,
         listen: open,
         passive: !open,
+        onSuccess,
+        onErrors
     })
 
     // console.log(initialObject)

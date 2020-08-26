@@ -1,0 +1,92 @@
+name: channels-binding.docs
+version: '3.6'
+
+commands:
+    init: launch -d
+    debug: logs -f --tail=500 app
+    enter: exec app bash
+    yarn: exec app yarn --modules-folder /node_modules/
+    psql: exec postgres psql -U postgres
+    flush: exec -T redis redis-cli FLUSHALL 
+    nginx: restart nginx
+    manage: exec app python manage.py
+    migrate: manage migrate
+    test: manage test
+    shell: manage shell
+    release: yarn run release
+
+environment:
+    - DISABLE_COLLECTSTATIC=1
+    - PYTHONBUFFERED=1
+    - STG=/var/storage/hub.api.clearversion
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - TZ=Europe/Paris
+
+services:
+
+    back: # asgi only
+        volumes: &app_volumes
+            - ./back:/app
+            - ./front/dist:/front/dist
+        ports:
+            - '8000:8000'
+        links: &app_links
+            - postgres:postgres
+            - redis:redis
+        restart: always
+        command: daphne -b 0.0.0.0 -p 8000 asgi:application
+
+    postgres:
+        image: postgres:12-alpine
+        volumes:
+            - /dev/shm:/dev/shm
+            - ${STG}/postgres/:/var/lib/postgresql/data
+        restart: always
+
+    redis:
+        image: redis:5.0.5-alpine
+        volumes:
+            - ${STG}/redis/:/data
+        restart: always
+
+targets:
+    localhost:
+
+        environment:
+            - DEBUG=1
+            - DEV_MODE=1
+            - SOCK_PORT=8888
+
+        commands:
+            install: yarn add
+            upgrade: yarn upgrade
+            uninstall: yarn remove
+            translate:
+                - manage makemessages --no-wrap -l fr 
+                - manage compilemessages -l fr 
+                - restart app
+            mm:
+                - manage migrate
+                - manage makemigrations
+                - manage migrate
+
+        services:
+
+            back:
+                tty: true
+                command: python manage.py runserver 0.0.0.0:8000
+
+            front: # Only for dev
+                environment:
+                ports:
+                    - '8888:8000'
+                volumes:
+                    - ./front/:/app
+                command: yarn run runserver
+                restart: always
+
+    
+    prod: 
+        environment:
+    test:
+        environment:

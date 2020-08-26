@@ -20,10 +20,10 @@ const useForm = ({
             setErrors(newData.errors)
             onErrors && onErrors(newData.errors)
         }
-        else if (newData.success) {
+        else if (newData.success === true) {
             setObject(newData.object)
             setSuccess(true)
-            onSuccess && onSuccess(newData.data)
+            onSuccess && onSuccess(newData.object)
         }
         else {
             setData(newData)

@@ -134,4 +134,7 @@ class JSONEncoder(json.JSONEncoder):
             return [obj.lower, obj.upper]
         elif isinstance(obj, decimal.Decimal):
             return float(obj)
-        return super().default(obj)
+        try:
+            return super().default(obj)
+        except TypeError:
+            return str(obj)

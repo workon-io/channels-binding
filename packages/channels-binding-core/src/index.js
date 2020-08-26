@@ -1,4 +1,3 @@
-
 import Bind from './binds/Bind'
 import useBind from './binds/useBind'
 
@@ -17,6 +16,8 @@ import useSave from './binds/useSave'
 import Delete from './binds/Delete'
 import useDelete from './binds/useDelete'
 
+import REWebSocket from './REWebSocket'
+
 export {
     Bind,
     useBind,
@@ -30,4 +31,5 @@ export {
     useSave,
     Delete,
     useDelete,
+    REWebSocket,
 }

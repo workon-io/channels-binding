@@ -38,7 +38,7 @@ class AsyncFormModelBinding(object):
 
     def get_form_fields(self, data):
         if not self.form_fields:
-            return [field.name for field in self.model._meta.get_fields()] if self.model else []
+            return [field.name for field in self.model._meta.get_fields() if field.editable] if self.model else []
         else:
             return self.form_fields
 
@@ -80,24 +80,23 @@ class AsyncFormModelBinding(object):
         fields = []
         for field in form:
             type = str(field.field.__class__.__name__)
-            data = dict(
+            field_data = dict(
                 name=field.name,
                 label=field.label,
                 type=type,
                 value=field.value(),
             )
-            print(type)
             if isinstance(field.field, ModelChoiceField):
                 model_field = field.field.queryset.model  # self.model._meta.get_field(field.name)
-                data['event'] = f'{model_field._meta.app_label}.{model_field._meta.object_name}'
+                field_data['event'] = f'{model_field._meta.app_label}.{model_field._meta.object_name}'
 
             elif isinstance(field.field, ChoiceField):
-                data['choices'] = field.field.choices
-            fields.append(data)
+                field_data['choices'] = field.field.choices
+            fields.append(field_data)
 
         return dict(
             errors=form.errors or None,
-            success='submit' in data and not form.errors,
+            success=not form.errors if 'submit' in data else None,
             object=self.serialize_retrieve(form.instance, data),
             fields=fields
         )

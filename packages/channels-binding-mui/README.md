@@ -7,7 +7,19 @@ with a very simple and verboseless exchange structure, where each django
 Models would be easily binded and come with native basics operations
 like \'retrieve\', \'search\', \'update\', \'create\', \'delete\' and
 subscription. We could made the comparaison with django restframework
-with the REST system.
+with the REST system. It also provides react packages with ready-to-use
+pre configured tools and components to make easy Applications UIs.
+
+Channels-binding is a compilation of somes packages :
+
+-   <https://pypi.org/project/channels-binding/> for python/django
+-   <https://www.npmjs.com/package/@channels-binding/core> for
+    node/react
+-   <https://www.npmjs.com/package/@channels-binding/mui> for
+    material-ui integration
+
+Summary
+=======
 
 -   [Demo (soon)]{.title-ref}
 -   [Capabilities](#capabilities)
@@ -175,7 +187,16 @@ class YourModelBinding(AsyncBinding):
 -   Let\'s start to communicate with a simple retrieve action on a
     frontal javascript thirdparty
 
-``` {.sourceCode .javascript}
+``` {.sourceCode .react}
+-  Assume that you have already react installed
+
+-  npm install @channels-binding/core
+
+-  For an integration with material-ui :
+-  npm install @channels-binding/mui
+```
+
+``` {.sourceCode .javascript only}
 var ws = new WebSocket("ws://" + window.location.host + "/")
 ws.onmessage = function(e){
     console.log(e.data)
