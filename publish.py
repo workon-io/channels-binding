@@ -90,23 +90,25 @@ if __name__ == "__main__":
         except BaseException:  # Tag exists
             pass
 
-        # Publish packages
-        for package in npm_packages:
-            cwd = "packages/channels-binding-%s" % package
-            print(subprocess.check_output(["npm", "publish", "--access", "public"], cwd=cwd))
-
-        for package in pypi_packages:
-            cwd = "packages/channels-binding-%s" % package
-            try:
-                print(subprocess.check_output(["rm", "-rf", "dist/*"], cwd=cwd))
-            except BaseException:  # No previous dist
-                pass
-            print(subprocess.check_output(["python3", "setup.py", "sdist", "bdist_wheel"], cwd=cwd))
-            print(subprocess.check_output(["python3", "-m", "twine", "upload", "--repository", "pypi", "dist/*"], cwd=cwd))
-
         # Git push + tags
         print(subprocess.check_output(["git", "push"]))
         print(subprocess.check_output(["git", "push", "--tags"]))
 
     else:
         print('Aucun changement')
+
+    print('Publication des packages')
+
+    # Publish packages
+    for package in npm_packages:
+        cwd = "packages/channels-binding-%s" % package
+        print(subprocess.check_output(["npm", "publish", "--access", "public"], cwd=cwd))
+
+    for package in pypi_packages:
+        cwd = "packages/channels-binding-%s" % package
+        try:
+            print(subprocess.check_output(["rm", "-rf", "dist/*"], cwd=cwd))
+        except BaseException:  # No previous dist
+            pass
+        print(subprocess.check_output(["python3", "setup.py", "sdist", "bdist_wheel"], cwd=cwd))
+        print(subprocess.check_output(["python3", "-m", "twine", "upload", "--repository", "pypi", "dist/*"], cwd=cwd))

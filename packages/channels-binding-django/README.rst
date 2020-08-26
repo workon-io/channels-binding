@@ -24,7 +24,10 @@ Summary
 
 Capabilities
 ------------
-- Full support of 'retrieve', 'search', 'list', 'update', 'create', 'save', 'delete', 'subscribe' events
+- Support of 'retrieve', 'form', 'search', 'list''update', 'create', 'save', 'delete', 'subscribe' events
+- Support of django signals to refresh any connected instance with React tools
+- Support of native django Queryset into React (Material-UI Tables available)
+- Support of native django Form into React (Material-UI Fields available)
 - Support of Hashed events for targeted subscribers (example: 2 lists on the same stream/event/model but with different filtering)
 - Auto channels subscribing groups of interest 'retrieve', 'list', 'delete'
 - Custom bindings events through decorators
@@ -178,16 +181,11 @@ Getting Started
 
 -  Let's start to communicate with a simple retrieve action on a frontal javascript thirdparty
 
-.. code:: react
+.. code:: javascript
 
-    -  Assume that you have already react installed
+    // Soon React example...
 
-    -  npm install @channels-binding/core
-
-    -  For an integration with material-ui :
-    -  npm install @channels-binding/mui
-
-.. code:: javascript only
+.. code:: javascript
 
     var ws = new WebSocket("ws://" + window.location.host + "/")
     ws.onmessage = function(e){
@@ -209,6 +207,17 @@ Getting Started
             id: 5763 
         }
     }))
+
+React front integration
+-----------------------
+
+-  Assume that you have already react installed
+
+-  npm install @channels-binding/core
+
+-  For an integration with material-ui
+
+-  npm install @channels-binding/mui
 
 Custom Events Binding
 ----------------------

@@ -30,8 +30,14 @@ Summary
 Capabilities
 ============
 
--   Full support of \'retrieve\', \'search\', \'list\', \'update\',
+-   Support of \'retrieve\', \'form\', \'search\', \'list\'\'update\',
     \'create\', \'save\', \'delete\', \'subscribe\' events
+-   Support of django signals to refresh any connected instance with
+    React tools
+-   Support of native django Queryset into React (Material-UI Tables
+    available)
+-   Support of native django Form into React (Material-UI Fields
+    available)
 -   Support of Hashed events for targeted subscribers (example: 2 lists
     on the same stream/event/model but with different filtering)
 -   Auto channels subscribing groups of interest \'retrieve\', \'list\',
@@ -187,16 +193,11 @@ class YourModelBinding(AsyncBinding):
 -   Let\'s start to communicate with a simple retrieve action on a
     frontal javascript thirdparty
 
-``` {.sourceCode .react}
--  Assume that you have already react installed
-
--  npm install @channels-binding/core
-
--  For an integration with material-ui :
--  npm install @channels-binding/mui
+``` {.sourceCode .javascript}
+// Soon React example...
 ```
 
-``` {.sourceCode .javascript only}
+``` {.sourceCode .javascript}
 var ws = new WebSocket("ws://" + window.location.host + "/")
 ws.onmessage = function(e){
     console.log(e.data)
@@ -218,6 +219,14 @@ ws.send(JSON.stringify({
     }
 }))
 ```
+
+React front integration
+=======================
+
+-   Assume that you have already react installed
+-   npm install \@channels-binding/core
+-   For an integration with material-ui
+-   npm install \@channels-binding/mui
 
 Custom Events Binding
 =====================
