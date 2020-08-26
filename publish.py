@@ -82,7 +82,10 @@ if __name__ == "__main__":
 
         for package in pypi_packages:
             cwd = "packages/channels-binding-%s" % package
-            print(subprocess.check_output(["rm", "-r", "dist/*"], cwd=cwd))
+            try:
+                print(subprocess.check_output(["rm", "-rf", "dist/*"], cwd=cwd))
+            except BaseException:  # No previous dist
+                pass
             print(subprocess.check_output(["python3", "setup.py", "sdist", "bdist_wheel"], cwd=cwd))
             print(subprocess.check_output(["python3", "-m", "twine", "upload", "--repository", "pypi", "dist/*"], cwd=cwd))
 
