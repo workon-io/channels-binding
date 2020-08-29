@@ -2,13 +2,15 @@ Channels Binding API
 ====================
 
 Channels Binding exposes an JSON API streaming system over
-[channels](https://github.com/django/channels), in very few code lines,
-with a very simple and verboseless exchange structure, where each django
-Models would be easily binded and come with native basics operations
-like \'retrieve\', \'search\', \'update\', \'create\', \'delete\' and
-subscription. We could made the comparaison with django restframework
-with the REST system. It also provides react packages with ready-to-use
-pre configured tools and components to make easy Applications UIs.
+[channels](https://github.com/django/channels), It\'s designed to work
+as a full featured RestAPI via websocket, http, or both protocols
+combined. in very few code lines, with a very simple and verboseless
+exchange structure, where each django Models would be easily binded and
+come with native basics operations like \'retrieve\', \'search\',
+\'update\', \'create\', \'delete\' and subscription. We could made the
+comparaison with django restframework with the REST system. It also
+provides react packages with ready-to-use pre configured tools and
+components to make easy Applications UIs.
 
 Channels-binding is a compilation of somes packages :
 

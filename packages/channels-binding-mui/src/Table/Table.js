@@ -5,14 +5,11 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import Pagination from '@material-ui/lab/Pagination';
 import OverflowTip from '@channels-binding/core/utils/OverflowTip';
-import BooleanField from '../fields/Boolean';
-import Field from '../fields/Field';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        position: 'relative'
+        position: 'relative',
     },
     table: {
         // tableLayout: 'auto',

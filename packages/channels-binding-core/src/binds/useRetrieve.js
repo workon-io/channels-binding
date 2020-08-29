@@ -10,13 +10,12 @@ const useRetrieve = ({
     onData: defaultOnData,
     ...props
 }) => {
-    const onData = defaultOnData || (
-        versatile ? null : ((data, oldData, setData) => {
-            if (data.id === oldData.id) {
-                setData(data)
-            }
-        })
-    )
+    const nominalOnData = (data, oldData, setData) => {
+        if (_.parseInt(data.id) === _.parseInt(oldData.id)) {
+            setData(data)
+        }
+    }
+    const onData = defaultOnData || (versatile ? null : nominalOnData)
     const listen = defaultListen || (versatile && [data])
     return useBind({
         data,

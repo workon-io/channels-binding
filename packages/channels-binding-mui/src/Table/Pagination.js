@@ -53,7 +53,7 @@ const Pagination = ({
         <TablePagination
             count={parseInt(count / (limit || rows.length)) + 1}
             page={Math.max(1, Math.min(count, page))}
-            color="white"
+            // color="white"
             onChange={handleChange}
             showFirstButton
             showLastButton

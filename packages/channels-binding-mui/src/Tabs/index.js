@@ -76,7 +76,7 @@ const Tabs = ({
             position={sticky ? "sticky" : "relative"}
             style={{
                 [_.isNumber(sticky) && 'top']: sticky,
-                zIndex: 1
+                zIndex: 1,
             }}
             color={dark ? "primary" : "default"}
         >

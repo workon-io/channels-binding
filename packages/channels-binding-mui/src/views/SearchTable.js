@@ -13,7 +13,8 @@ import { useSearch, Retrieve } from '@channels-binding/core'
 
 const useStyles = makeStyles(theme => ({
     root: {
-        position: 'relative'
+        position: 'relative',
+        boxShadow: '0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12)',
     },
     Create: {
         marginBottom: 65
@@ -21,7 +22,7 @@ const useStyles = makeStyles(theme => ({
     add: {
         position: 'absolute',
         right: 5,
-        bottom: -65,
+        bottom: -45,
         zIndex: 10,
     },
 }));
@@ -214,6 +215,7 @@ const SearchTable = ({
             className={classes.add}
             onClick={handleAddClick}
             color="primary"
+            size="small"
             aria-label="add">
             <AddIcon />
         </Fab>}
