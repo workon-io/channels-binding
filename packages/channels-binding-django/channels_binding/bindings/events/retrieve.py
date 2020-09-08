@@ -17,7 +17,7 @@ __all__ = [
 
 @database_sync_to_async
 def async_retrieve_data(bind, data, instance=None):
-    instance = instance or bind.get_object(data, create=True)
+    instance = instance or bind.get_object(data, create=False)
     if isinstance(instance, list):
         retrieve_data = []
         for inst in instance:

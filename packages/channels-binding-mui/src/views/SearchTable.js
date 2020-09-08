@@ -1,4 +1,3 @@
-
 import TableBody from '@material-ui/core/TableBody';
 import TableHead from '@material-ui/core/TableHead';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
@@ -10,6 +9,7 @@ import Table from '../Table/Table'
 import TableRow from '../Table/Row'
 import TableCell from '../Table/Cell'
 import { useSearch, Retrieve } from '@channels-binding/core'
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -51,14 +51,22 @@ const SearchTableWrapper = ({
         FormProps = {},
         Delete,
         DeleteProps = {},
+        linkTo = null,
         ...props
     }) => {
-
         const [openRetrieve, setOpenRetrieve] = React.useState(false);
         const [openUpdate, setOpenUpdate] = React.useState(false);
         const [openDelete, setOpenDelete] = React.useState(false);
         const [openForm, setOpenForm] = React.useState(false);
-        const handleRowClick = e => setOpenRetrieve(Boolean(Retrieve))
+        const linkRef = React.useRef()
+        const handleRowClick = e => {
+            if (linkTo) {
+                linkRef.current.click()
+            }
+            else {
+                setOpenRetrieve(Boolean(Retrieve))
+            }
+        }
         const handleRowDoubleClick = e => setOpenUpdate(Boolean(Update))
         const handleCloseRetrieve = e => setOpenRetrieve(false)
         const handleCloseUpdate = e => setOpenUpdate(false)
@@ -71,6 +79,7 @@ const SearchTableWrapper = ({
                 selected={openRetrieve || openUpdate || openDelete}
                 {...props}
             />
+            {linkTo && <Link to={linkTo} ref={linkRef} />}
             {(openRetrieve || openUpdate || openDelete) && <tr style={{ display: 'none' }}><td colSpan='100%'>
                 {Retrieve && openRetrieve && <Retrieve
                     setOpenUpdate={Update && setOpenUpdate}
@@ -110,16 +119,16 @@ const SearchTableWrapper = ({
     />
 
     const HeadRow = props => <TableRow
-        isHead {...props}
+        head {...props}
     />
     const HeadCell = props => <TableCell
-        isHead {...props}
+        head {...props}
     />
 
     const RowWrapper = props => {
         return (rows || children)({
-            Row: props.isHead ? HeadRow : BodyRow,
-            Cell: props.isHead ? HeadCell : BodyCell,
+            Row: props.head ? HeadRow : BodyRow,
+            Cell: props.head ? HeadCell : BodyCell,
             ...props
         })
     }
@@ -188,7 +197,7 @@ const SearchTable = ({
             )}
         >
             <TableHead>
-                <RowWrapper isHead data={{}} />
+                <RowWrapper head data={{}} />
                 <tr style={{ position: 'relative' }}><td colSpan={'100%'} style={{ position: 'absolute', left: 0, right: 0, height: 4, padding: 0 }}>{fetching && <LinearProgress />}</td></tr>
             </TableHead>
             <TableBody>

@@ -59,4 +59,4 @@ class AsyncModelBinding(object):
             if create:
                 return self.model()
             else:
-                raise Exception(f'{self.stream} pk:{pk} Does Not Exist')
+                raise self.model.DoesNotExist(f'{self.stream} pk:{pk} Does Not Exist')

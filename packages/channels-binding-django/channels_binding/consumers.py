@@ -14,6 +14,7 @@ from .bindings.registry import (
 )
 from .utils import send
 from . import settings as self_settings
+import inspect
 
 
 logger = logging.getLogger(__name__)
@@ -112,7 +113,12 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                         payload = {}
                     print('----=> receive', event_hash, '<=TO=>', method_name)
                     binding.today = datetime.date.today()
-                    await getattr(binding, method_name)(payload)
+
+                    method = getattr(binding, method_name)
+                    if inspect.iscoroutinefunction(method):
+                        await method(payload)
+                    else:
+                        await database_sync_to_async(method)(payload)
                     counter += 1
             if not counter:
                 logger.warning(f'No binding found for {event}#{self.hash}')

@@ -11,7 +11,10 @@ const useRetrieve = ({
     ...props
 }) => {
     const nominalOnData = (data, oldData, setData) => {
-        if (_.parseInt(data.id) === _.parseInt(oldData.id)) {
+        if (
+            _.parseInt(data.id) === _.parseInt(oldData.id) ||
+            (!oldData.id && data.id)
+        ) {
             setData(data)
         }
     }

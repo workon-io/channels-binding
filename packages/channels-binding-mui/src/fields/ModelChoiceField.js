@@ -29,21 +29,10 @@ const ModelChoiceField = ({
     getValue: defaultGetValue,
     getOptionLabel: defaultGetOptionLabel,
     renderInput: defaultRenderInput,
+    renderOption: defaultRenderOption,
+    passive = false
 }) => {
     const classes = styles();
-    const getValue = defaultGetValue || (item => item.id)
-    const renderInput = defaultRenderInput || (params => <TextField
-        {...params}
-        label={label}
-    />)
-    const getOptionLabel = defaultGetOptionLabel || (item => {
-        try {
-            return item.name || item.label
-        }
-        catch (e) {
-            return item.id
-        }
-    })
 
     const [filters, setFilters] = React.useState({})
     const [page, setPage] = React.useState(1)
@@ -53,10 +42,11 @@ const ModelChoiceField = ({
     const { data: valueObject } = useBind({
         stream,
         action: 'retrieve',
+        hash: Math.random(100),
         data: { id },
         args: { id },
         listen: [id],
-        passive: !Boolean(id)
+        passive: passive || !Boolean(id)
     })
     const { data: results, search } = useSearch({
         stream,
@@ -64,7 +54,22 @@ const ModelChoiceField = ({
         listen: [page, limit, order, filters],
         args: { page, limit, order, ...filters }
     })
-    const { count, rows, } = results
+
+    const getValue = defaultGetValue || (item => item.id)
+    const renderInput = defaultRenderInput || (params => <TextField
+        {...params}
+        value=''
+        label={label}
+    />)
+    const getOptionLabel = defaultGetOptionLabel || (item => {
+        try {
+            return _.toString(item.name || item.label || item.id)
+        }
+        catch (e) {
+            return _.toString(item.id)
+        }
+    })
+    const renderOption = defaultRenderOption || ((item, { selected }) => getOptionLabel(item))
     const handleChange = (e, item) => {
         if (onChange) {
             onChange(getValue(item))
@@ -77,6 +82,8 @@ const ModelChoiceField = ({
             className={classes.formControl}
             error={Boolean(errors)}
         >
+            {valueObject.email}
+            {valueObject && renderOption(valueObject, { selected: true })}
             <Autocomplete
                 multiple={multiple}
                 options={results.rows || []}
@@ -85,6 +92,7 @@ const ModelChoiceField = ({
                 onChange={handleChange}
                 getOptionLabel={getOptionLabel}
                 // getValue={getValue}
+                renderOption={renderOption}
                 renderInput={renderInput}
             // style={{ width: 300 }}
             />
