@@ -1,4 +1,4 @@
-import TextField from "./Text";
+import CharField from "./CharField";
 import BooleanField from "./Boolean";
 import ForeignKeyField from "./ForeignKey";
 import IntegerField from "./Integer";
@@ -7,19 +7,20 @@ import QuantityRangeField from "./QuantityRange";
 import SelectField from "./Select";
 import RangeField from "./Range";
 import DateTimeField from "./DateTime";
-import RichTextField from "./RichText";
+import RichCharField from "./RichText";
 import ModelChoiceField from "./ModelChoiceField";
 import ModelMultipleChoiceField from "./ModelMultipleChoiceField";
+import ChoiceField from './ChoiceField'
 
 
 
 const fieldsMapping = {
-    undefined: TextField,
-    null: TextField,
+    undefined: CharField,
+    null: CharField,
     // Django fields
     'BooleanField': BooleanField,
-    'CharField': TextField,
-    'ChoiceField': SelectField,
+    'CharField': CharField,
+    'ChoiceField': ChoiceField,
     'TypedChoiceField': SelectField,
     'DateField': DateTimeField,
     'DateTimeField': DateTimeField,
@@ -30,8 +31,8 @@ const fieldsMapping = {
     // FilePathField
     // FloatField
     // ImageField
-    'IntegerField': TextField,
-    'FloatField': TextField,
+    'IntegerField': CharField,
+    'FloatField': CharField,
     // JSONField
     // GenericIPAddressField
     // MultipleChoiceField
@@ -50,8 +51,8 @@ const fieldsMapping = {
     // ModelChoiceIterator
     // ModelChoiceIteratorValue
     // Extra fields
-    'RichTextField': RichTextField,
-    'HTMLField': RichTextField,
+    'RichCharField': RichCharField,
+    'HTMLField': RichCharField,
     'QuantityField': QuantityField,
     'QuantityRangeField': QuantityRangeField,
     'RangeField': RangeField,

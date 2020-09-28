@@ -111,14 +111,16 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, (list, dict)):
                         payload = {}
-                    print('----=> receive', event_hash, '<=TO=>', method_name)
+                    # print('----=> receive', event_hash, '<=TO=>', method_name)
                     binding.today = datetime.date.today()
 
                     method = getattr(binding, method_name)
                     if inspect.iscoroutinefunction(method):
                         await method(payload)
                     else:
-                        await database_sync_to_async(method)(payload)
+                        outdata = await database_sync_to_async(method)(payload)
+                        if isinstance(outdata, (list, dict)):
+                            await binding.reflect(data['event'], outdata)
                     counter += 1
             if not counter:
                 logger.warning(f'No binding found for {event}#{self.hash}')

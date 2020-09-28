@@ -1,6 +1,7 @@
 import json
 import decimal
 import datetime
+import codecs
 from channels.db import database_sync_to_async
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -127,7 +128,13 @@ class JSONEncoder(json.JSONEncoder):
         elif isinstance(obj, datetime.datetime):
             return obj.isoformat()
         elif isinstance(obj, bytes):
-            return obj.decode('utf-8')
+            try:
+                return obj.decode('utf-8')
+            except UnicodeDecodeError:
+                try:
+                    return obj.decode('latin-1')
+                except UnicodeDecodeError:
+                    return obj.decode('cp1250')
         elif isinstance(obj, memoryview):
             return obj.tobytes().decode('utf-8')
         elif NumericRange and isinstance(obj, NumericRange):

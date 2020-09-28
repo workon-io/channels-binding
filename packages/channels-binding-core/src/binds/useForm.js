@@ -34,14 +34,19 @@ const useForm = ({
         data,
         action,
         passive,
-        args: object && object.id ? { ...args, id: object.id } : { ...args, ...object },
+        args: object && object.id ?
+            { ...args, id: object.id } :
+            { ...args, ...object },
         onData,
         ...props
     })
 
     const setValue = (name, value) => setData({ ...data, [name]: value })
 
-    const submit = overData => results.send({ submit: overData, id: data.id })
+    const submit = overData => results.send(object && object.id ?
+        { ...args, submit: overData, id: data.id } :
+        { ...args, ...object, submit: overData, id: data.id }
+    )
 
     const fields = data.fields || {}
     _.map(fields, field => {

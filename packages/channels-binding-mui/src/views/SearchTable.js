@@ -217,25 +217,29 @@ const SearchTable = ({
                 )}
             </TableBody>
         </Table>
-        <div style={{ position: 'sticky', bottom: 0 }}>
+        <div style={{ position: 'sticky', bottom: 0, zIndex: 1 }}>
             {paginator}
         </div>
-        {Create && <Fab
-            className={classes.add}
-            onClick={handleAddClick}
-            color="primary"
-            size="small"
-            aria-label="add">
-            <AddIcon />
-        </Fab>}
-        {openCreate && <div>
-            {Create && <Create
-                data={{}}
-                open={openCreate}
-                onClose={handleCloseRetrieve}
-                {...CreateProps}
-            />}
-        </div>}
+        {
+            Create && <Fab
+                className={classes.add}
+                onClick={handleAddClick}
+                color="primary"
+                size="small"
+                aria-label="add">
+                <AddIcon />
+            </Fab>
+        }
+        {
+            openCreate && <div>
+                {Create && <Create
+                    data={{}}
+                    open={openCreate}
+                    onClose={handleCloseRetrieve}
+                    {...CreateProps}
+                />}
+            </div>
+        }
     </div >
 }
 

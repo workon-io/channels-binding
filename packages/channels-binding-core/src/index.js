@@ -18,6 +18,9 @@ import useDelete from './binds/useDelete'
 
 import REWebSocket from './REWebSocket'
 
+import useDebouncedState from './utils/useDebouncedState'
+import useDebounced from './utils/useDebounced'
+
 export {
     Bind,
     useBind,
@@ -32,4 +35,6 @@ export {
     Delete,
     useDelete,
     REWebSocket,
+    useDebouncedState,
+    useDebounced
 }

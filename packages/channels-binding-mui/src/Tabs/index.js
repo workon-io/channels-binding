@@ -17,6 +17,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Tabs = ({
+    index,
     defaultIndex,
     onChange,
     component = 'appbar',
@@ -39,7 +40,7 @@ const Tabs = ({
     }
     const handleChangeIndex = index => setCurrentIndex(index);
     const bar = <MuiTabs
-        value={currentIndex}
+        value={index || currentIndex}
         classes={{
             indicator: classes.indicator
         }}

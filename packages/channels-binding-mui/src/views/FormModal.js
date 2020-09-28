@@ -7,6 +7,7 @@ import { useForm } from '@channels-binding/core'
 
 class State {
     @observable data = {}
+
     @action.bound setValue(name, value) {
         this.data = ({ ...this.data, [name]: value });
     }
@@ -76,7 +77,6 @@ const FormModal = (({
         onSuccess,
         onErrors
     })
-
     // console.log(initialObject)
 
     const handleSaveClick = e => submit(state.data)

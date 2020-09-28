@@ -41,6 +41,11 @@ class AsyncSearchModelBinding(object):
                 limit=queryset.paginator.per_page,
                 count=queryset.paginator.count,
                 rows=rows
+            ) if hasattr(queryset, 'paginator') else dict(
+                page=1,
+                limit=len(rows),
+                count=len(rows),
+                rows=rows
             )
         else:
             return self.serializer_class(queryset, datas).data

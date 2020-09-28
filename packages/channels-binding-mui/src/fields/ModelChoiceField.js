@@ -3,11 +3,15 @@ import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { useSearch, useBind } from '@channels-binding/core'
+import FieldWrapper from './Mixins/FieldWrapper';
 
 const styles = makeStyles(theme => ({
     root: {
         padding: theme.spacing(0, 1),
         paddingTop: 0,
+    },
+    flex: {
+        display: 'flex'
     },
     input: {
         marginTop: 0,
@@ -18,20 +22,24 @@ const styles = makeStyles(theme => ({
     },
 }));
 
-const ModelChoiceField = ({
-    label,
-    value: id,
-    stream,
-    onChange,
-    multiple,
-    helpText,
-    errors,
-    getValue: defaultGetValue,
-    getOptionLabel: defaultGetOptionLabel,
-    renderInput: defaultRenderInput,
-    renderOption: defaultRenderOption,
-    passive = false
-}) => {
+const ModelChoiceField = props => {
+    const {
+        label,
+        value: id,
+        stream,
+        flex,
+        filters: defaultFilters,
+        onChange,
+        multiple,
+        helpText,
+        errors,
+        getValue: defaultGetValue,
+        getOptionLabel: defaultGetOptionLabel,
+        renderInput: defaultRenderInput,
+        renderOption: defaultRenderOption,
+        passive = false,
+        ...otherProps
+    } = props
     const classes = styles();
 
     const [filters, setFilters] = React.useState({})
@@ -52,7 +60,7 @@ const ModelChoiceField = ({
         stream,
         passive: true,
         listen: [page, limit, order, filters],
-        args: { page, limit, order, ...filters }
+        args: { page, limit, order, ...defaultFilters, ...filters }
     })
 
     const getValue = defaultGetValue || (item => item.id)
@@ -76,29 +84,22 @@ const ModelChoiceField = ({
         }
     }
 
-    return <div className={classes.root}>
-        <FormControl
-            fullWidth
-            className={classes.formControl}
-            error={Boolean(errors)}
-        >
-            {valueObject.email}
-            {valueObject && renderOption(valueObject, { selected: true })}
-            <Autocomplete
-                multiple={multiple}
-                options={results.rows || []}
-                value={valueObject}
-                onOpen={e => search()}
-                onChange={handleChange}
-                getOptionLabel={getOptionLabel}
-                // getValue={getValue}
-                renderOption={renderOption}
-                renderInput={renderInput}
-            // style={{ width: 300 }}
-            />
-            {errors && _.map(errors, error => <FormHelperText>{error}</FormHelperText>)}
-        </FormControl>
-    </div>
+    return <FieldWrapper {...props}>
+        {valueObject.email}
+        {valueObject && renderOption(valueObject, { selected: true })}
+        <Autocomplete
+            multiple={multiple}
+            options={results.rows || []}
+            value={valueObject}
+            onOpen={e => search()}
+            onChange={handleChange}
+            getOptionLabel={getOptionLabel}
+            // getValue={getValue}
+            renderOption={renderOption}
+            renderInput={renderInput}
+        // style={{ width: 300 }}
+        />
+    </FieldWrapper>
 }
 
 export default ModelChoiceField
