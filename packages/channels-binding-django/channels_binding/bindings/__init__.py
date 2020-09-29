@@ -39,9 +39,9 @@ class AsyncBindingBase(metaclass=RegisteredBindingMetaClass):
     stream = None
     permission_classes = ()
 
-    def __init__(self, consumer=None):
+    def __init__(self, consumer=None, user=None):
         self.consumer = consumer
-        self.user = consumer.user if consumer else None
+        self.user = consumer.user if consumer else user
         self.today = datetime.date.today()
 
     def get_binding(self, stream):

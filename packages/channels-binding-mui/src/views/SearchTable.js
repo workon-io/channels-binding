@@ -79,7 +79,10 @@ const SearchTableWrapper = ({
                 selected={openRetrieve || openUpdate || openDelete}
                 {...props}
             />
-            {linkTo && <Link to={linkTo} ref={linkRef} />}
+            {linkTo && <>
+                <tr style={{ display: 'none' }}><td colSpan='100%'><Link to={linkTo} ref={linkRef} /></td></tr>
+                <tr style={{ display: 'none' }}><td colSpan='100%'></td></tr>
+            </>}
             {(openRetrieve || openUpdate || openDelete) && <tr style={{ display: 'none' }}><td colSpan='100%'>
                 {Retrieve && openRetrieve && <Retrieve
                     setOpenUpdate={Update && setOpenUpdate}

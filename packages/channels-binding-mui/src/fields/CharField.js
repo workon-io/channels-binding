@@ -25,6 +25,7 @@ const styles = makeStyles(theme => ({
 
 const TextField = props => {
 	const {
+		forwardedRef,
 		label,
 		value,
 		defaultValue,
@@ -74,5 +75,7 @@ const TextField = props => {
 		</>
 	}
 }
+
+
 
 export default TextField

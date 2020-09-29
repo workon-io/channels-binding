@@ -120,7 +120,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     else:
                         outdata = await database_sync_to_async(method)(payload)
                         if isinstance(outdata, (list, dict)):
-                            await binding.reflect(data['event'], outdata)
+                            await binding.reflect(method_name, outdata)
                     counter += 1
             if not counter:
                 logger.warning(f'No binding found for {event}#{self.hash}')

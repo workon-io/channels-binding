@@ -11,6 +11,7 @@ __all__ = [
 registered_binding_classes = set()
 registered_binding_events = dict()
 registered_lazy_binding_by_stream = dict()
+stream_duplicity = dict()
 
 
 class RegisteredBindingMetaClass(type):
@@ -57,6 +58,10 @@ class RegisteredBindingMetaClass(type):
                     events.append([binding_class, method_name])
 
             if stream:
+                if stream in stream_duplicity:
+                    print(f'\033[40;91m\033[1m[Bindings not registered]\033[0m \033[40;91m{stream} ({binding_class})\033[0m')
+                    raise Exception(f'\033[40;91m\033[1m{stream} duplicated. Check {binding_class} vs {stream_duplicity[stream]}\033[0m')
+                stream_duplicity[stream] = binding_class
                 registered_binding_classes.add(binding_class)
                 print(f'\033[40;92m\033[1m[Bindings registered]\033[0m \033[40;92m{stream} ({binding_class})\033[0m')
         return binding_class

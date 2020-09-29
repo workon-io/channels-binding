@@ -12,13 +12,14 @@ const styles = makeStyles(theme => ({
     }
 }));
 
-const FielWrapper = ({
+const FieldWrapper = ({
+    forwardedRef,
     fullWidth,
     errors,
     ...props
 }) => {
     const classes = styles();
-    return <div className={clsx(classes.root, !fullWidth && classes.flex)}>
+    return <div ref={forwardedRef} className={clsx(classes.root, !fullWidth && classes.flex)}>
         <FormControl
             className={classes.formControl}
             error={Boolean(errors)}
@@ -30,4 +31,7 @@ const FielWrapper = ({
     </div>
 }
 
-export default FielWrapper
+
+export default React.forwardRef((props, ref) => (
+    <FieldWrapper  {...props} forwardedRef={ref} />
+))
