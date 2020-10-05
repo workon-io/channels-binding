@@ -40,7 +40,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
     if hash:
         event = f'{event}#{hash}'
     message = await encode_json({'event': event, 'data': data})
-    print('----=> SEND', event, group)
+    # print('----=> SEND', event, group)
 
     # Dispatch or group == __all__ to broadcast
     if group:

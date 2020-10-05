@@ -121,7 +121,7 @@ const SearchTableWrapper = ({
         {...props}
     />
 
-    const HeadRow = props => <TableRow
+    const HeadRow = ({ linkTo, ...props }) => <TableRow
         head {...props}
     />
     const HeadCell = props => <TableCell

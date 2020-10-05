@@ -1,4 +1,6 @@
 from channels_binding.utils import send_sync
+from django.db.models.signals import post_save, post_delete, m2m_changed
+from django.db.models.fields.related import ManyToManyField
 
 __all__ = [
     'AsyncSignalsModelBinding',
@@ -34,3 +36,35 @@ class AsyncSignalsModelBinding(object):
         bind = cls._lazy
         delete_data = {'success': True, 'id': instance.pk}
         send_sync('delete', delete_data, stream=bind.stream, group=bind.stream)
+
+    @classmethod
+    def connect_signals(cls, connected=True):
+        if (
+            cls.model and
+            getattr(cls, 'post_save_connect', False) and
+            hasattr(cls, 'post_save')
+        ):
+            if connected:
+                post_save.connect(cls.post_save, sender=cls.model)
+            else:
+                post_save.disconnect(cls.post_save, sender=cls.model)
+            for field in cls.model._meta.get_fields():
+                if isinstance(field, ManyToManyField):
+                    if connected:
+                        m2m_changed.connect(cls.m2m_changed, sender=getattr(cls.model, field.name).through)
+                    else:
+                        m2m_changed.disconnect(cls.m2m_changed, sender=getattr(cls.model, field.name).through)
+
+        if (
+            cls.model and
+            getattr(cls, 'post_delete_connect', False) and
+            hasattr(cls, 'post_delete')
+        ):
+            if connected:
+                post_delete.connect(cls.post_delete, sender=cls.model)
+            else:
+                post_delete.disconnect(cls.post_delete, sender=cls.model)
+
+    @classmethod
+    def disconnect_signals(cls):
+        cls.connect_signals(connected=False)

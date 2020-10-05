@@ -1,5 +1,4 @@
-from django.db.models.signals import post_save, post_delete, m2m_changed
-from django.db.models.fields.related import ManyToManyField
+
 
 __all__ = [
     'RegisteredBindingMetaClass',
@@ -28,23 +27,7 @@ class RegisteredBindingMetaClass(type):
             binding_class._lazy = binding_class()
             binding_class._lazy_bindings_by_stream = registered_lazy_binding_by_stream
             binding_class._lazy_bindings_by_stream[stream] = binding_class._lazy
-
-            if (
-                binding_class.model and
-                getattr(binding_class, 'post_save_connect', False) and
-                hasattr(binding_class, 'post_save')
-            ):
-                post_save.connect(binding_class.post_save, sender=binding_class.model)
-                for field in binding_class.model._meta.get_fields():
-                    if isinstance(field, ManyToManyField):
-                        m2m_changed.connect(binding_class.m2m_changed, sender=getattr(binding_class.model, field.name).through)
-
-            if (
-                binding_class.model and
-                getattr(binding_class, 'post_delete_connect', False) and
-                hasattr(binding_class, 'post_delete')
-            ):
-                post_delete.connect(binding_class.post_delete, sender=binding_class.model)
+            binding_class.connect_signals()
 
             for method_name in dir(binding_class):
                 method = getattr(binding_class, method_name)

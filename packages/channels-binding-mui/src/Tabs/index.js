@@ -4,6 +4,7 @@ import Typography from '@material-ui/core/Typography';
 import SwipeableViews from 'react-swipeable-views';
 import AppBar from '@material-ui/core/AppBar';
 import Paper from '@material-ui/core/Paper';
+import { Link } from "react-router-dom"
 
 const useStyles = makeStyles(theme => ({
     indicator: {
@@ -51,7 +52,11 @@ const Tabs = ({
         aria-label="full width tabs example"
     >
         {React.Children.map(children, (child, index) => {
-            return child && child.props && <Tab label={child.props.label} {...a11yProps(index)} />
+            const linkRef = React.useRef()
+            const handleRowClick = e => child.props.linkTo && linkRef.current.click()
+            return child && child.props && <Tab onClick={handleRowClick} label={<>
+                {child.props.label}{child.props.linkTo && <Link to={child.props.linkTo} ref={linkRef} />
+                }</>} {...a11yProps(index)} />
         })}
     </MuiTabs>
 
@@ -100,6 +105,7 @@ const Tabs = ({
 }
 
 Tabs.Tab = ({ index, currentIndex, label, children }) => {
+
     return <TabPanel value={currentIndex} index={index}>
         {React.Children.map(children, (child, index) => {
             return child && child.props && typeof (child.props.showName) === 'function' ? children({
