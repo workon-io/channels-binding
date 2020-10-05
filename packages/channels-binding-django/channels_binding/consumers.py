@@ -1,21 +1,20 @@
-import json
-import os
-import requests
-import traceback
-import logging
 import datetime
+import inspect
+import json
+import logging
+import os
+import traceback
+
+import requests
+from channels.db import database_sync_to_async
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
 from django.conf import settings
-from .bindings.registry import (
-    registered_binding_classes,
-    registered_binding_events
-)
-from .utils import send
-from . import settings as self_settings
-import inspect
 
+from . import settings as self_settings
+from .bindings.registry import (registered_binding_classes,
+                                registered_binding_events)
+from .utils import send
 
 logger = logging.getLogger(__name__)
 __all__ = [
@@ -111,10 +110,11 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, (list, dict)):
                         payload = {}
-                    # print('----=> receive', event_hash, '<=TO=>', method_name)
+                    print('----=> receive', event_hash, '<=TO=>', method_name)
                     binding.today = datetime.date.today()
 
                     method = getattr(binding, method_name)
+                    print(inspect.iscoroutinefunction(method))
                     if inspect.iscoroutinefunction(method):
                         await method(payload)
                     else:

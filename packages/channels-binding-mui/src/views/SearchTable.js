@@ -153,6 +153,7 @@ const SearchTable = ({
     dark,
     paginationTop = false,
     onCreateRefresh = true,
+    onData,
     Create,
     CreateProps = {},
     ...props
@@ -173,7 +174,9 @@ const SearchTable = ({
         stream: defaultStream,
         data: props.data,
         listen: [page, limit, order, filters],
-        args: { page, limit, order, ...filters }
+        args: { page, limit, order, ...filters },
+        onData: onData
+
     })
     const { count, rows, } = data
     const paginator = count > limit && <Pagination

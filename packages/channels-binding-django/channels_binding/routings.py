@@ -1,12 +1,12 @@
 # from rest_framework import routers
+from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
+from channels.sessions import SessionMiddlewareStack
 from django.conf import settings
+from django.conf.urls.static import static
 from django.http import HttpResponse
 from django.urls import include, path, re_path
-from django.conf.urls.static import static
-from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
-from channels.sessions import SessionMiddlewareStack
-from .consumers import AsyncConsumer
 
+from .consumers import AsyncConsumer
 
 async_root_application = ProtocolTypeRouter({
     # (http->django views is added by default)
