@@ -1,10 +1,14 @@
-import json
-import decimal
-import datetime
 import codecs
-from channels.db import database_sync_to_async
+import datetime
+import decimal
+import json
+
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
+
+from .bindings.registry import registered_lazy_binding_by_stream
+
 try:
     from psycopg2.extras import NumericRange
 except ImportError as e:
@@ -25,6 +29,10 @@ async def encode_json(message):
     return json.dumps(message, cls=JSONEncoder)
 
 
+def get_binding(stream):
+    return registered_lazy_binding_by_stream.get(stream)
+
+
 async def send(event, data, stream=None, hash=None, group=None, user=None, consumer=None, binding=None):
     # Send a event message
     if binding:
@@ -32,7 +40,12 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
     elif consumer:
         layer = consumer.channel_layer
     else:
-        layer = get_channel_layer()  # TODO: cache it !
+        # if stream:
+        #     binding = get_binding(stream)
+        #     if binding:
+        #         layer = binding.consumer.channel_layer
+        if not binding:
+            layer = get_channel_layer()  # TODO: cache it !
     if not stream and binding:
         stream = binding.stream
     if stream:
@@ -40,7 +53,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
     if hash:
         event = f'{event}#{hash}'
     message = await encode_json({'event': event, 'data': data})
-    # print('----=> SEND', event, group)
+    print('----=> SEND', event, group)
 
     # Dispatch or group == __all__ to broadcast
     if group:
@@ -68,8 +81,17 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
         # Self to current thread ~= the connected user
         await consumer.send(text_data=message)
 
+    # Reflect to the current consumer
+    else:
+        # Self to current thread ~= the connected user
+        await layer.group_send(
+            '__all__',
+            {'type': 'channel_message', 'message': message}
+        )
+
 
 def send_sync(*args, **kwargs):
+    print(kwargs)
     async_to_sync(send)(*args, **kwargs)
 
 
