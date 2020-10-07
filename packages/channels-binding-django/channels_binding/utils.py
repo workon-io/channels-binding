@@ -40,12 +40,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
     elif consumer:
         layer = consumer.channel_layer
     else:
-        # if stream:
-        #     binding = get_binding(stream)
-        #     if binding:
-        #         layer = binding.consumer.channel_layer
-        if not binding:
-            layer = get_channel_layer()  # TODO: cache it !
+        layer = get_channel_layer()  # TODO: cache it !
     if not stream and binding:
         stream = binding.stream
     if stream:
@@ -53,7 +48,7 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
     if hash:
         event = f'{event}#{hash}'
     message = await encode_json({'event': event, 'data': data})
-    print('----=> SEND', event, group)
+    # print('----=> SEND', event, group)
 
     # Dispatch or group == __all__ to broadcast
     if group:
@@ -91,7 +86,6 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
 
 
 def send_sync(*args, **kwargs):
-    print(kwargs)
     async_to_sync(send)(*args, **kwargs)
 
 
