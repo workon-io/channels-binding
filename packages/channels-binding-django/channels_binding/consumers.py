@@ -110,11 +110,10 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, (list, dict)):
                         payload = {}
-                    print('----=> receive', event_hash, '<=TO=>', method_name)
+                    # print('----=> receive', event_hash, '<=TO=>', method_name)
                     binding.today = datetime.date.today()
 
                     method = getattr(binding, method_name)
-                    print(inspect.iscoroutinefunction(method))
                     if inspect.iscoroutinefunction(method):
                         await method(payload)
                     else:

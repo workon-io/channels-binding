@@ -7,8 +7,6 @@ from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
 
-from .bindings.registry import registered_lazy_binding_by_stream
-
 try:
     from psycopg2.extras import NumericRange
 except ImportError as e:
@@ -30,6 +28,7 @@ async def encode_json(message):
 
 
 def get_binding(stream):
+    from .bindings.registry import registered_lazy_binding_by_stream
     return registered_lazy_binding_by_stream.get(stream)
 
 
