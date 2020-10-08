@@ -57,4 +57,4 @@ class AsyncSearchModelBinding(object):
             query=dict(
                 query=query,
             ),
-        )
+        ), *args, **kwargs)
