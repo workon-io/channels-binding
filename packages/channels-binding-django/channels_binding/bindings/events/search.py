@@ -1,12 +1,9 @@
-from channels.db import database_sync_to_async
-from django.forms import modelform_factory
 from asgiref.sync import async_to_sync
+from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
-from channels_binding.utils import (
-    bind, db_sync, sync, send, send_sync
-)
-
 from channels_binding import settings as self_settings
+from channels_binding.utils import bind, db_sync, send, send_sync, sync
+from django.forms import modelform_factory
 
 __all__ = [
     'AsyncSearchModelBinding',
@@ -52,3 +49,12 @@ class AsyncSearchModelBinding(object):
 
     def serialize_search_row(self, instance, data):
         return self.serialize_retrieve(instance, data)
+
+    @bind('search_suggestions')
+    async def search_suggestions(self, data):
+        query = data.get('query', '')
+        return dict(
+            query=dict(
+                query=query,
+            ),
+        )

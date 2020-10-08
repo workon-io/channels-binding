@@ -16,7 +16,7 @@ stream_duplicity = dict()
 class RegisteredBindingMetaClass(type):
     def __new__(cls, clsname, superclasses, attributedict):
         binding_class = type.__new__(cls, clsname, superclasses, attributedict)
-        if superclasses:
+        if superclasses and not binding_class in registered_binding_classes:
             stream = None
             if binding_class.stream:
                 stream = binding_class.stream
