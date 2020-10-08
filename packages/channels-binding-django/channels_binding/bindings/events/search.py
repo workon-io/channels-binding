@@ -53,7 +53,7 @@ class AsyncSearchModelBinding(object):
     @bind('search_suggestions')
     async def search_suggestions(self, data):
         query = data.get('query', '')
-        return dict(
+        await self.reflect(f'search_suggestions', dict(
             query=dict(
                 query=query,
             ),
