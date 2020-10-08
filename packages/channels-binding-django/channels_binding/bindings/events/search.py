@@ -51,7 +51,7 @@ class AsyncSearchModelBinding(object):
         return self.serialize_retrieve(instance, data)
 
     @bind('search_suggestions')
-    async def search_suggestions(self, data):
+    async def search_suggestions(self, data, *args, **kwargs):
         query = data.get('query', '')
         await self.reflect(f'search_suggestions', dict(
             query=dict(
