@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "private": false,
   "keywords": [
     "channels",
@@ -25,9 +25,10 @@
   },
   "main": "src/index.js",
   "files": [
-    "*.js",
-    "binds/*.js",
-    "utils/*.js"
+    "src/*.js",
+    "src/**/*.js",
+    "src/binds/*.js",
+    "src/utils/*.js"
   ],
   "author": "Damien Autrusseau",
   "license": "MIT",
