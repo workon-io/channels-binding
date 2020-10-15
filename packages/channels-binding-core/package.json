@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.4.19",
+  "version": "1.4.20",
   "private": false,
   "keywords": [
     "channels",
@@ -23,8 +23,7 @@
     "url": "git+https://github.com/workon-io/channels-binding.git",
     "type": "git"
   },
-  "source": "src/index.js",
-  "main": "dist/index.js",
+  "main": "src/index.js",
   "files": [
     "*.js",
     "binds/*.js",
