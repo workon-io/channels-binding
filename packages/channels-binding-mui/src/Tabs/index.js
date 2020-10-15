@@ -3,7 +3,6 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import SwipeableViews from 'react-swipeable-views';
 import AppBar from '@material-ui/core/AppBar';
-import Paper from '@material-ui/core/Paper';
 import { Link } from "react-router-dom"
 
 const useStyles = makeStyles(theme => ({
@@ -14,20 +13,20 @@ const useStyles = makeStyles(theme => ({
     sticky: {
         position: 'sticky',
         zIndex: 2
-    }
+    },
 }));
 
 const Tabs = ({
     index,
     defaultIndex,
     onChange,
-    component = 'appbar',
     variant = 'standard',
     cache = null,
     swipe = false,
     centered = false,
     sticky = false,
     dark = false,
+    disableElevation = false,
     children,
 }) => {
 
@@ -77,11 +76,14 @@ const Tabs = ({
         {tabsContent}
     </SwipeableViews> : tabsContent
 
+    console.log(disableElevation)
+
     return <>
         <AppBar
             position={sticky ? "sticky" : "relative"}
             style={{
                 [_.isNumber(sticky) && 'top']: sticky,
+                [disableElevation && 'boxShadow']: 'none',
                 zIndex: 1,
             }}
             color={dark ? "primary" : "default"}

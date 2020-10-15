@@ -14,7 +14,7 @@ from django.conf import settings
 from . import settings as self_settings
 from .bindings.registry import (registered_binding_classes,
                                 registered_binding_events)
-from .utils import send
+from .utils import send, send_sync
 
 logger = logging.getLogger(__name__)
 __all__ = [
@@ -57,7 +57,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         try:
             self.user = await self.get_user()
-            if self.user:
+            if self.user or self_settings.ANONYMOUS_CONNECTION_ALLOWED:
                 self.bindings_by_class = {}
                 self.bindings_by_stream = {}
                 for bc in registered_binding_classes:
@@ -70,20 +70,18 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                 await self.accept()
                 # await self.send('auth.roles', self.user.roles)
             else:
-                if self_settings.ANONYMOUS_CONNECTION_ALLOWED:
-                    await self.accept()
-                else:
-                    raise DenyConnection("Invalid Token")
-                    await self.close()
+                raise DenyConnection("Invalid Token")
+                await self.close()
         except Exception as e:
             logger.error(traceback.format_exc())
             raise DenyConnection(traceback.format_exc())
             await self.close()
 
-    # On client disconnect
-    async def disconnect(self, close_code):
+    async def disconnect(self, close_code=None):
         for group in set(self.groups):
             await self.unsubscribe(group)
+        if not close_code:
+            await self.close()
 
     async def subscribe(self, group):
         self.groups.add(group)
@@ -133,6 +131,11 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         kwargs['hash'] = self.hash
         kwargs['consumer'] = self
         await send(*args, **kwargs)
+
+    def send_sync(self, *args, **kwargs):
+        kwargs['hash'] = self.hash
+        kwargs['consumer'] = self
+        send_sync(*args, **kwargs)
 
     # Receive message from the group
     async def channel_message(self, message):

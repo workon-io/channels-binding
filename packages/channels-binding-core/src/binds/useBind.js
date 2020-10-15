@@ -9,7 +9,8 @@ const useBind = props => {
         data: defaultData,
         args = {},
         passive = false,
-        onData = null
+        onData = null,
+        handleData = null
     } = props
     let {
         event,
@@ -62,6 +63,7 @@ const useBind = props => {
                     }
                     else {
                         setData(incommingData)
+                        handleData && handleData(incommingData, data, setData)
                     }
                     setFetching(false)
                 })
