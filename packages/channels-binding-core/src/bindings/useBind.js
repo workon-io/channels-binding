@@ -1,4 +1,5 @@
 import { registry } from '../consumers/registerConsumer'
+import React from 'react'
 
 const defaultMakeListener = props => {
     console.error(`Invalid useBind props`, props)

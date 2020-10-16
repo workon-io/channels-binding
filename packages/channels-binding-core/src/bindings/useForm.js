@@ -1,4 +1,6 @@
 import useBind from './useBind'
+import React from 'react'
+
 
 const useForm = ({
     object: defaultObject, // as initial data

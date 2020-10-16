@@ -1,4 +1,6 @@
 import useBind from './useBind'
+import React from 'react'
+
 
 const useSave = ({
     data: initialData, // as initial data

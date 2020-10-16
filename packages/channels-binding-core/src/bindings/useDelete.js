@@ -1,4 +1,5 @@
 import useBind from './useBind'
+import React from 'react'
 
 const useDelete = ({
     data: initialData, // as initial data
