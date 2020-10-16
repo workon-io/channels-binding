@@ -1,14 +1,13 @@
 
-const globalParams = {}
-
-function ReconnectingWebSocket(url, protocols, options) {
+function ReconnectingWebSocket(props) {
 
     // Default settings
-    var settings = {
+    this.settings = _.defaults(props, {
 
         /** Whether this instance should log debug messages. */
         debug: true,
-
+        protocols: [],
+        args: {},
         /** Whether or not the websocket should attempt to connect immediately upon instantiation. */
         automaticOpen: true,
 
@@ -27,41 +26,13 @@ function ReconnectingWebSocket(url, protocols, options) {
 
         /** The binary type, possible values 'blob' or 'arraybuffer', default 'blob'. */
         binaryType: 'blob'
-    }
-    if (!options) { options = {}; }
+    })
 
-    // Overwrite and define settings with options if they exist.
-    for (var key in settings) {
-        if (typeof options[key] !== 'undefined') {
-            this[key] = options[key];
-        } else {
-            this[key] = settings[key];
-        }
-    }
-
-    // These should be treated as read-only properties
-
-    /** The URL as resolved by the constructor. This is always an absolute URL. Read only. */
-    this.url = url;
 
     /** The number of attempted reconnects since starting, or the last successful connection. Read only. */
     this.reconnectAttempts = 0;
-
-    /**
-     * The current state of the connection.
-     * Can be one of: WebSocket.CONNECTING, WebSocket.OPEN, WebSocket.CLOSING, WebSocket.CLOSED
-     * Read only.
-     */
     this.readyState = WebSocket.CONNECTING;
-
-    /**
-     * A string indicating the name of the sub-protocol the server selected; this will be one of
-     * the strings specified in the protocols parameter when creating the WebSocket object.
-     * Read only.
-     */
     this.protocol = null;
-
-    // Private state variables
 
     var self = this;
     var ws;
@@ -101,15 +72,14 @@ function ReconnectingWebSocket(url, protocols, options) {
     };
 
     this.open = function (reconnectAttempt) {
-        const params = _.map(globalParams, (val, key) => `${key}=${val}`).join('&');
-        ws = new WebSocket(`${self.url}?${params}`, protocols || [], {
+        ws = new WebSocket(`${self.settings.url}`, self.settings.protocols, {
 
         });
         ws.rejectUnauthorized = false
-        ws.binaryType = this.binaryType;
+        ws.binaryType = this.settings.binaryType;
 
         if (reconnectAttempt) {
-            if (this.maxReconnectAttempts && this.reconnectAttempts > this.maxReconnectAttempts) {
+            if (this.settings.maxReconnectAttempts && this.reconnectAttempts > this.settings.maxReconnectAttempts) {
                 return;
             }
         } else {
@@ -117,23 +87,23 @@ function ReconnectingWebSocket(url, protocols, options) {
             this.reconnectAttempts = 0;
         }
 
-        if (self.debug || ReconnectingWebSocket.debugAll) {
+        if (self.settings.debug || ReconnectingWebSocket.debugAll) {
             console.debug('ReconnectingWebSocket', 'attempt-connect', self.url);
         }
 
         var localWs = ws;
         var timeout = setTimeout(function () {
-            if (self.debug || ReconnectingWebSocket.debugAll) {
+            if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                 console.debug('ReconnectingWebSocket', 'connection-timeout', self.url);
             }
             timedOut = true;
             localWs.close();
             timedOut = false;
-        }, self.timeoutInterval);
+        }, self.settings.timeoutInterval);
 
         ws.onopen = function (event) {
             clearTimeout(timeout);
-            if (self.debug || ReconnectingWebSocket.debugAll) {
+            if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                 console.debug('ReconnectingWebSocket', 'onopen', self.url);
             }
             self.protocol = ws.protocol;
@@ -159,21 +129,21 @@ function ReconnectingWebSocket(url, protocols, options) {
                 e.wasClean = event.wasClean;
                 eventTarget.dispatchEvent(e);
                 if (!reconnectAttempt && !timedOut) {
-                    if (self.debug || ReconnectingWebSocket.debugAll) {
+                    if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                         console.debug('ReconnectingWebSocket', 'onclose', self.url);
                     }
                     eventTarget.dispatchEvent(generateEvent('close'));
                 }
 
-                var timeout = self.reconnectInterval * Math.pow(self.reconnectDecay, self.reconnectAttempts);
+                var timeout = self.settings.reconnectInterval * Math.pow(self.settings.reconnectDecay, self.reconnectAttempts);
                 setTimeout(function () {
                     self.reconnectAttempts++;
                     self.open(true);
-                }, timeout > self.maxReconnectInterval ? self.maxReconnectInterval : timeout);
+                }, timeout > self.settings.maxReconnectInterval ? self.settings.maxReconnectInterval : timeout);
             }
         };
         ws.onmessage = function (event) {
-            if (self.debug || ReconnectingWebSocket.debugAll) {
+            if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                 console.debug('ReconnectingWebSocket', 'onmessage', self.url, event.data);
             }
             var e = generateEvent('message');
@@ -181,7 +151,7 @@ function ReconnectingWebSocket(url, protocols, options) {
             eventTarget.dispatchEvent(e);
         };
         ws.onerror = function (event) {
-            if (self.debug || ReconnectingWebSocket.debugAll) {
+            if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                 console.debug('ReconnectingWebSocket', 'onerror', self.url, event);
             }
             eventTarget.dispatchEvent(generateEvent('error'));
@@ -189,7 +159,7 @@ function ReconnectingWebSocket(url, protocols, options) {
     }
 
     // Whether or not to create a websocket upon instantiation
-    if (this.automaticOpen == true) {
+    if (this.settings.automaticOpen == true) {
         this.open(false);
     }
 
@@ -200,7 +170,7 @@ function ReconnectingWebSocket(url, protocols, options) {
      */
     this.send = function (data) {
         if (ws) {
-            if (self.debug || ReconnectingWebSocket.debugAll) {
+            if (self.settings.debug || ReconnectingWebSocket.debugAll) {
                 console.debug('ReconnectingWebSocket', 'send', self.url, data);
             }
             return ws.send(data);
@@ -260,5 +230,4 @@ ReconnectingWebSocket.OPEN = WebSocket.OPEN;
 ReconnectingWebSocket.CLOSING = WebSocket.CLOSING;
 ReconnectingWebSocket.CLOSED = WebSocket.CLOSED;
 
-export { globalParams }
 export default ReconnectingWebSocket;

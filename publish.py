@@ -1,8 +1,8 @@
-import os
-import sys
-import re
 import json
+import os
+import re
 import subprocess
+import sys
 
 '''
     requires:
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         for package in npm_packages:
             cwd = "packages/channels-binding-%s" % package
             print(subprocess.check_output(
-                ["npm", "publish", "--access", "public"], cwd=cwd))
+                ["npm", "publish", "src", "--access", "public"], cwd=cwd))
     except Exception as e:
         print(e)
 
