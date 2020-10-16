@@ -1,3 +1,5 @@
+import { registry } from '../Consumer'
+
 const defaultMakeListener = props => {
     console.error(`Invalid useBind props`, props)
     return () => null
@@ -24,8 +26,8 @@ const useBind = props => {
 
     listen = _.isArray(listen) ? listen : (listen ? [listen] : [])
     let makeListener = defaultMakeListener
-    let api = null
-    let apiEvent = null
+    let consumer = null
+    let consumerEvent = null
     if (stream) {
         const stream_hash = _.split(stream, '#')
         if (stream_hash.length >= 2) {
@@ -41,7 +43,7 @@ const useBind = props => {
         return {
             stream,
             event,
-            api,
+            consumer,
             hash,
             data: data,
             fetching,
@@ -52,12 +54,12 @@ const useBind = props => {
 
     if (event) {
         hash && (event = `${event}#${hash}`)
-        const api_event = _.split(event, ':')
-        if (api_event.length >= 2) {
-            api = API[api_event[0]]
-            apiEvent = api_event[1]
-            if (api) {
-                makeListener = props => api.addListener(apiEvent, incommingData => {
+        const consumer_event = _.split(event, ':')
+        if (consumer_event.length >= 2) {
+            consumer = registry[consumer_event[0]]
+            consumerEvent = consumer_event[1]
+            if (consumer) {
+                makeListener = props => consumer.addListener(consumerEvent, incommingData => {
                     if (onData) {
                         onData(incommingData, data, setData)
                     }
@@ -73,9 +75,9 @@ const useBind = props => {
 
 
     const send = outcomingData => {
-        if (apiEvent && api) {
+        if (consumerEvent && consumer) {
             setFetching(true)
-            api.send(apiEvent, outcomingData || args)
+            consumer.send(consumerEvent, outcomingData || args)
         }
     }
     const refresh = () => { send() }
@@ -90,7 +92,7 @@ const useBind = props => {
     return {
         stream,
         event,
-        api,
+        consumer,
         hash,
         data: data,
         fetching,

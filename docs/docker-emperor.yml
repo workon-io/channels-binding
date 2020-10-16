@@ -18,7 +18,7 @@ commands:
 environment:
     - DISABLE_COLLECTSTATIC=1
     - PYTHONBUFFERED=1
-    - STG=/var/storage/hub.api.clearversion
+    - STG=/var/storage/channels-binding/docs
     - POSTGRES_HOST_AUTH_METHOD=trust
     - TZ=Europe/Paris
 

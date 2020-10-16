@@ -7,6 +7,9 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'app.conf.settings')
 app_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 sys.path.append(app_dir)
+
+channels_binding = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../packages/channels-binding-django/channels_binding')
+sys.path.append(channels_binding)
 django.setup()
 
 if __name__ == '__main__':

@@ -21,6 +21,6 @@
         "jsx": "react"
     },
     "include": [
-        "src", "etc", "apps", "exts", "libs"
+        "src", 
     ]
 }

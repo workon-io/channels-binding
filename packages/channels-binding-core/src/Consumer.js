@@ -1,6 +1,24 @@
 import REWebSocket, { globalParams } from './REWebSocket'
 
-export default class {
+const registry = {}
+const consumers = {
+    register: (name, path, onStateUpdate) => {
+
+        console.log(path)
+        const url = new URL(path)
+        console.log(url)
+        const consumer = new Consumer({
+            host: url.hostname,
+            port: url.port,
+            path: url.pathname,
+            onStateUpdate
+        })
+        registry[name] = consumer
+    }
+}
+
+
+class Consumer {
 
     active = false
     connected = false
@@ -140,7 +158,7 @@ export default class {
         this.socket.addEventListener('open', this.onOpen);
         this.socket.addEventListener('close', this.onClose);
         this.socket.addEventListener('message', this.receive);
-        this.stateUpdate()
+        this.updateState()
     }
 
     onOpen() {
@@ -151,21 +169,21 @@ export default class {
             delete this.pending_calls[event]
             this.send(event, data)
         })
-        this.stateUpdate()
+        this.updateState()
     }
 
     onClose(message) {
         this.pending = false;
         this.connected = false
         this.debug && this.logError('Closed')
-        this.stateUpdate()
+        this.updateState()
     }
 
     close() {
         this.socket && (this.socket.close())
         this.pending = false;
         this.connected = false;
-        this.stateUpdate()
+        this.updateState()
     }
 
     log(message, color, ...messages) {
@@ -185,3 +203,6 @@ export default class {
     }
 
 }
+
+export { Consumer, consumers, registry }
+export default Consumer
