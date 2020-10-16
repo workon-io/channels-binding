@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.4.26",
+  "version": "1.4.27",
   "private": false,
   "keywords": [
     "channels",
@@ -61,7 +61,6 @@
   "dependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "release": "npm run-script build && npm publish --access public"
+    "build": "webpack"
   }
 }
