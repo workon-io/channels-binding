@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.4.23",
+  "version": "1.4.25",
   "private": false,
   "keywords": [
     "channels",
@@ -23,12 +23,13 @@
     "url": "git+https://github.com/workon-io/channels-binding.git",
     "type": "git"
   },
-  "main": "src/index.js",
+  "main": "index.js",
   "files": [
-    "src/*.js",
-    "src/**/*.js",
-    "src/binds/*.js",
-    "src/utils/*.js"
+    "*.js",
+    "**/*.js",
+    "consumers/*.js",
+    "bindings/*.js",
+    "utils/*.js"
   ],
   "author": "Damien Autrusseau",
   "license": "MIT",
