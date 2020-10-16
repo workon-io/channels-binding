@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.4.25",
+  "version": "1.4.26",
   "private": false,
   "keywords": [
     "channels",
@@ -23,13 +23,13 @@
     "url": "git+https://github.com/workon-io/channels-binding.git",
     "type": "git"
   },
-  "main": "index.js",
+  "main": "./index.js",
   "files": [
-    "*.js",
-    "**/*.js",
-    "consumers/*.js",
-    "bindings/*.js",
-    "utils/*.js"
+    "index.js",
+    "package.json",
+    "README.md",
+    "README.rst",
+    "LICENSE"
   ],
   "author": "Damien Autrusseau",
   "license": "MIT",
@@ -60,6 +60,8 @@
   },
   "dependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "release": "npm run-script build && npm publish --access public"
   }
 }

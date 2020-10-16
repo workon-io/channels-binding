@@ -116,7 +116,7 @@ if __name__ == "__main__":
         for package in npm_packages:
             cwd = "packages/channels-binding-%s" % package
             print(subprocess.check_output(
-                ["npm", "publish", "--access", "public"], cwd=cwd))
+                ["npm", "run-script", "release"], cwd=cwd))
     except Exception as e:
         print(e)
 
