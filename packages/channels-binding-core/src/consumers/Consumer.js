@@ -58,6 +58,10 @@ class Consumer {
         this.connect()
     }
 
+    disconnect() {
+        this.close()
+    }
+
     close() {
         this.socket && (this.socket.close())
         this.pending = false;
@@ -126,7 +130,11 @@ class Consumer {
         this.connect()
     }
 
-    delArg(name, value) {
+    unsetArg(name) {
+        this.delArg(name)
+    }
+
+    delArg(name) {
         this.url.searchParams.delete(name)
         this.connect()
     }
