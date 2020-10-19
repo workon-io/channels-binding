@@ -70,8 +70,8 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                 await self.accept()
                 # await self.send('auth.roles', self.user.roles)
             else:
-                raise DenyConnection("Invalid Token")
-                await self.close()
+                raise DenyConnection("You have to be authenticated")
+                # await self.close()
         except Exception as e:
             logger.error(traceback.format_exc())
             raise DenyConnection(traceback.format_exc())

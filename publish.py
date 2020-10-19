@@ -14,7 +14,7 @@ import sys
 
 npm_packages = [
     'core',
-    'mui',
+    # 'mui',
 ]
 
 pypi_packages = [
