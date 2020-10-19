@@ -16,9 +16,9 @@ const useConsumer = (name) => {
     const [state, setState] = React.useState(getConsumerState(consumer));
 
     React.useEffect(() => {
-        consumer && consumer.connect()
         consumer && consumer.addStateListener(key, consumer => setState(getConsumerState(consumer)))
-        return () => consumer && consumer.removeStateListener(key, consumer => setState(getConsumerState(consumer)))
+        consumer && consumer.connect()
+        return () => consumer && consumer.removeStateListener(key)
     }, [])
 
     return state

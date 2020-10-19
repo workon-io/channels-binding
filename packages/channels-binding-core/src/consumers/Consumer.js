@@ -122,7 +122,7 @@ class Consumer {
     }
 
     updateState() {
-        _.map(this.state_listeners, callback => callback(this))
+        _.map(this.state_listeners, callback => _.isFunction(callback) && callback(this))
     }
 
     setArg(name, value) {
