@@ -30,7 +30,7 @@ class Consumer {
     }
 
     connect() {
-        if (this.active) return;
+        if (this.connected) return;
         this.active = true;
         this.pending = true;
         this.options.debug && this.logSuccess('Connecting', this.url.href)
@@ -167,7 +167,7 @@ class Consumer {
 
     setArg(name, value) {
         this.url.searchParams.set(name, value)
-        this.connect()
+        this.reconnect()
     }
 
     unsetArg(name) {
@@ -176,7 +176,7 @@ class Consumer {
 
     delArg(name) {
         this.url.searchParams.delete(name)
-        this.connect()
+        this.reconnect()
     }
 
     // useEventEffect(event, method, listen, condition = true) {
