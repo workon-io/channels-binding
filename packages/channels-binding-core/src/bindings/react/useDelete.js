@@ -5,18 +5,22 @@ const useDelete = ({
     data: initialData, // as initial data
     action = 'delete',
     passive = true,
-    args = {},
-    onData: defaultOnData,
+    params = {},
+    intercept: defaultIntercept,
     onSuccess,
     onErrors,
+    pk = 'id',
     ...props
 }) => {
 
     const [data, setData] = React.useState(initialData);
     const [success, setSuccess] = React.useState(false);
     const [errors, setErrors] = React.useState(null);
-    const onData = defaultOnData || ((newData, oldData, setData) => {
-        if (newData.id === initialData.id) {
+    const intercept = defaultIntercept || ((newData, oldData, setData) => {
+        if (
+            newData[pk] === initialData[pk] ||
+            newData[pk] === params[pk]
+        ) {
             if (newData.errors) {
                 setSuccess(false)
                 setErrors(newData.errors)
@@ -34,11 +38,11 @@ const useDelete = ({
     const results = useBind({
         action,
         passive,
-        args: data && data.id ? { ...args, id: data.id } : args,
-        onData,
+        params: data && data[pk] ? { ...params, id: data[pk] } : params,
+        intercept,
         ...props
     })
-    const submit = overData => results.send({ ...(overData || {}), id: data.id })
+    const submit = overData => results.send({ ...(overData || {}), id: data[pk] })
 
     React.useEffect(() => {
         setData(initialData)

@@ -6,8 +6,8 @@ const useForm = ({
     object: defaultObject, // as initial data
     action = 'form',
     passive = false,
-    args = {},
-    onData: defaultOnData,
+    params = {},
+    intercept: defaultIntercept,
     onSuccess,
     onErrors,
     ...props
@@ -17,7 +17,7 @@ const useForm = ({
     const [success, setSuccess] = React.useState(false);
     const [errors, setErrors] = React.useState(null);
 
-    const onData = defaultOnData || ((newData, oldData, setData) => {
+    const intercept = defaultIntercept || ((newData, oldData, setData) => {
         if (newData.errors) {
             setErrors(newData.errors)
             onErrors && onErrors(newData.errors)
@@ -36,18 +36,18 @@ const useForm = ({
         data,
         action,
         passive,
-        args: object && object.id ?
-            { ...args, id: object.id } :
-            { ...args, ...object },
-        onData,
+        params: object && object.id ?
+            { ...params, id: object.id } :
+            { ...params, ...object },
+        intercept,
         ...props
     })
 
     const setValue = (name, value) => setData({ ...data, [name]: value })
 
     const submit = overData => results.send(object && object.id ?
-        { ...args, submit: overData, id: data.id } :
-        { ...args, ...object, submit: overData, id: data.id }
+        { ...params, submit: overData, id: data.id } :
+        { ...params, ...object, submit: overData, id: data.id }
     )
 
     const fields = data.fields || {}

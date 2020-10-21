@@ -6,8 +6,8 @@ const useSave = ({
     data: initialData, // as initial data
     action = 'save',
     passive = true,
-    args = {},
-    onData: defaultOnData,
+    params = {},
+    intercept: defaultIntercept,
     onSuccess,
     onErrors,
     ...props
@@ -16,7 +16,7 @@ const useSave = ({
     const [data, setData] = React.useState(initialData);
     const [success, setSuccess] = React.useState(false);
     const [errors, setErrors] = React.useState(null);
-    const onData = defaultOnData || ((newData, oldData, setData) => {
+    const intercept = defaultIntercept || ((newData, oldData, setData) => {
         if (newData.errors) {
             setSuccess(false)
             setErrors(newData.errors)
@@ -36,8 +36,8 @@ const useSave = ({
     const results = useBind({
         action,
         passive,
-        args: data && data.id ? { ...args, id: data.id } : args,
-        onData,
+        params: data && data.id ? { ...params, id: data.id } : params,
+        intercept,
         ...props
     })
     const submit = overData => results.send({ ...(overData || data), id: data.id })

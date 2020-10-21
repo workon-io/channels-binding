@@ -17,7 +17,6 @@ class Consumer {
         this.url = new URL(`${this.options.protocol}//${this.options.host}:${this.options.port}`)
         this.url.pathname = this.options.path || ''
         _.map(this.options.params, (value, name) => this.url.searchParams.set(name, value))
-        console.log(this.url)
         this.name = name
         this.active = false
         this.connected = false
@@ -96,6 +95,47 @@ class Consumer {
         }
     }
 
+    attachListener(event, method, condition = true, setFetching) {
+        const handler = (...args) => {
+            method && method(...args)
+            setFetching && setFetching(false)
+        }
+        const disposer = this.addListener(event, handler)
+        condition && this.send(event, options) && setFetching && setFetching(true)
+        return disposer
+    }
+
+    disposeListener(event, method) {
+        const key = Math.random()
+        this.options.debug && this.options.debug > 2 && this.logInfo(`addListener: ${event}.${method && method.name}`);
+        this.connect()
+        !this.listeners[event] && (this.listeners[event] = {})
+        // Replace the method ref pointer
+        this.listeners[event][key] = method
+        return () => {
+            this.options.debug && this.options.debug > 2 && this.logInfo(`removeListener: ${event}.${method && method.name}`);
+            try { delete this.listeners[event][key] }
+            catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`removeListener: ${event}.${method && method.name} not found.`) }
+        }
+    }
+
+    addListener(event, method) {
+        this.options.debug && this.options.debug > 2 && this.logInfo(`addListener: ${event}.${method && method.name}`);
+        this.connect()
+        !this.listeners[event] && (this.listeners[event] = {})
+        // Replace the method ref pointer
+        this.listeners[event][method] = method
+        return () => {
+            this.removeListener(event, method)
+        }
+    }
+
+    removeListener(event, method) {
+        this.options.debug && this.options.debug > 2 && this.logInfo(`removeListener: ${event}.${method && method.name}`);
+        try { delete this.listeners[event][method] }
+        catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`removeListener: ${event}.${method && method.name} not found.`) }
+    }
+
     receive(message) {
         const data = JSON.parse(message.data)
         if (data.event == 'error') {
@@ -139,40 +179,12 @@ class Consumer {
         this.connect()
     }
 
+    // useEventEffect(event, method, listen, condition = true) {
+    //     const [fetching, setFetching] = React.useState(condition)
+    //     React.useEffect(() => this.attachListener(event, method, condition, setFetching), listen || [])
+    //     return fetching
+    // }
 
-    useEventEffect(event, method, listen, condition = true) {
-        const [fetching, setFetching] = React.useState(condition)
-        React.useEffect(() => this.attachListener(event, method, condition, setFetching), listen || [])
-        return fetching
-    }
-
-    attachListener(event, method, condition = true, setFetching) {
-        const handler = (...args) => {
-            method && method(...args)
-            setFetching && setFetching(false)
-        }
-        const disposer = this.addListener(event, handler)
-        condition && this.send(event, options) && setFetching && setFetching(true)
-        return disposer
-    }
-
-
-    addListener(event, method) {
-        this.options.debug && this.options.debug > 2 && this.logInfo(`addListener: ${event}.${method && method.name}`);
-        this.connect()
-        !this.listeners[event] && (this.listeners[event] = {})
-        // Replace the method ref pointer
-        this.listeners[event][method] = method
-        return () => {
-            this.removeListener(event, method)
-        }
-    }
-
-    removeListener(event, method) {
-        this.options.debug && this.options.debug > 2 && this.logInfo(`removeListener: ${event}.${method && method.name}`);
-        try { delete this.listeners[event][method] }
-        catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`removeListener: ${event}.${method && method.name} not found.`) }
-    }
 
     once(event, method) {
         this.options.debug && this.options.debug > 2 && this.logInfo(`once: Method ${event}.${method && method.name}`);

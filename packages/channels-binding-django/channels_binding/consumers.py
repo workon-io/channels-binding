@@ -97,8 +97,8 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         try:
             data = json.loads(text_data)
             event_hash = data['event'].split('#', 1)
-            event = event_hash[0]
-            self.hash = event_hash[-1] if len(event_hash) == 2 else None
+            event = event_hash[0].strip()
+            self.hash = event_hash[-1].strip() if len(event_hash) == 2 else None
             payload = data.get('data', {})
             events = registered_binding_events.get(event, [])
             counter = 0
