@@ -10,6 +10,7 @@ class Consumer {
             path: null,
             debug: 0,
             params: {},
+            safetyLimit: true,
             protocol: window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         })
 
@@ -27,6 +28,8 @@ class Consumer {
         this.unique_listeners = {}
         this.socket = null
         this.state_listeners = {}
+        this.event_limits = {}
+        this.event_limits_to = null
     }
 
     connect() {
@@ -78,20 +81,34 @@ class Consumer {
 
     send(event, data, delay) {
         this.connect()
-        if (this.connected) {
-            this.options.debug && this.logInfo('Sent', event, this.options.debug > 1 && data);
-            if (delay) {
-                setTimeout(() => (
-                    this.socket.send(JSON.stringify({ event, data }))
-                ), delay);
-            }
-            else {
-                this.socket.send(JSON.stringify({ event, data }));
+        if (this.options.safetyLimit) {
+
+            this.event_limits[event] ? (this.event_limits[event] += 1) : (this.event_limits[event] = 1)
+            this.event_limits_to && clearTimeout(this.event_limits_to)
+            this.event_limits_to = setTimeout(() => delete this.event_limits[event], 1000);
+            if (this.event_limits[event] > 100) {
+                throw 'Channels binding Consumer.safetyLimit => Too many event sending occured in too few ms ellasped.'
             }
         }
-        else {
-            this.pending_calls[event] = data
-            this.options.debug > 2 && this.logError('Not sent', 'Socket is not connected yet')
+        try {
+            if (this.connected) {
+                this.options.debug && this.logInfo('Sent', event, this.options.debug > 1 && data);
+                if (delay) {
+                    setTimeout(() => (
+                        this.socket.send(JSON.stringify({ event, data }))
+                    ), delay);
+                }
+                else {
+                    this.socket.send(JSON.stringify({ event, data }));
+                }
+            }
+            else {
+                this.pending_calls[event] = data
+                this.options.debug > 2 && this.logError('Not sent', 'Socket is not connected yet')
+            }
+        }
+        catch (e) {
+            this.reconnect()
         }
     }
 
