@@ -68,6 +68,12 @@ const useBind = props => {
                     }
                     observe && observe(incommingData, state.data, setCompleteData)
                 })
+
+                // React.useEffect(() => {
+                //     const disposer = dispose()
+                //     !passive && send(params)
+                //     return disposer
+                // }, [consumer.connected])
             }
         }
     }
