@@ -3,6 +3,7 @@ import inspect
 import json
 import logging
 import os
+import time
 import traceback
 
 import requests
@@ -36,14 +37,16 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         self.bindings_by_stream = {}
         self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
 
-    @database_sync_to_async
-    def get_user(self):
+    async def get_user(self):
         self.user = None
         self.user_id = None
         self.user_group_name = None
         for auth in self.authentifications:
             if hasattr(auth, 'get_user'):
-                self.user = auth.get_user(self)
+                if inspect.iscoroutinefunction(auth.get_user):
+                    self.user = await auth.get_user(self)
+                else:
+                    self.user = auth.get_user(self)
                 if self.user:
                     self.user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
                     if self.user_id:
@@ -56,7 +59,11 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         try:
-            self.user = await self.get_user()
+            if inspect.iscoroutinefunction(self.get_user):
+                self.user = await self.get_user()
+            else:
+                self.user = self.get_user()
+
             if self.user or self_settings.ANONYMOUS_CONNECTION_ALLOWED:
                 self.bindings_by_class = {}
                 self.bindings_by_stream = {}
@@ -68,14 +75,11 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                 if self.user_group_name:
                     await self.subscribe(self.user_group_name)
                 await self.accept()
-                # await self.send('auth.roles', self.user.roles)
             else:
-                raise DenyConnection("You have to be authenticated")
-                # await self.close()
+                raise DenyConnection("Anonymous User is not allowed")
         except Exception as e:
             logger.error(traceback.format_exc())
             raise DenyConnection(traceback.format_exc())
-            await self.close()
 
     async def disconnect(self, close_code=None):
         for group in set(self.groups):
@@ -90,8 +94,6 @@ class AsyncConsumer(AsyncWebsocketConsumer):
     async def unsubscribe(self, group):
         self.groups.remove(group)
         await self.channel_layer.group_discard(group, self.channel_name)
-
-    # On client send a message, pass throught the corresponding action_ (event)
 
     async def receive(self, text_data):
         try:
@@ -108,20 +110,24 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     if not isinstance(payload, (list, dict)):
                         payload = {}
-                    # print('----=> receive', event_hash, '<=TO=>', method_name)
                     binding.today = datetime.date.today()
-
+                    t0 = time.time()
                     method = getattr(binding, method_name)
-                    if inspect.iscoroutinefunction(method):
-                        await method(payload)
-                    else:
-                        outdata = await database_sync_to_async(method)(payload)
-                        if isinstance(outdata, (list, dict)):
-                            await binding.reflect(method_name, outdata)
+                    outdata = await method(payload)
+                    if outdata:
+                        await binding.reflect(method_name, outdata)
+                    t = time.time() - t0
+                    print(f'Event {event} takes {round(t, 2)} seconds')
                     counter += 1
             if not counter:
                 logger.warning(f'No binding found for {event}#{self.hash}')
                 await self.lazy_send('error', f'No binding found for {event}#{self.hash}')
+
+        except RuntimeError as e:
+            logger.error(traceback.format_exc())
+            await self.lazy_send('error', traceback.format_exc())
+            await self.close()
+
         except Exception as e:
             logger.error(traceback.format_exc())
             await self.lazy_send('error', traceback.format_exc())
