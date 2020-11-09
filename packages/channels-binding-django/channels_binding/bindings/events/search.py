@@ -1,5 +1,6 @@
 from channels_binding.utils import bind
 from django.core.paginator import Paginator
+from django.db.models import F
 
 __all__ = [
     'AsyncSearchModelBinding',
@@ -85,6 +86,7 @@ class AsyncSearchModelBinding(object):
 
     async def order_queryset(self, queryset, order, data):
         if order:
+            order = order.replace('.', '__')
             queryset = queryset.order_by(
                 F(order.strip('-')).asc(nulls_last=True) if order.startswith('-')
                 else

@@ -1,6 +1,8 @@
 import os
+
 from django.conf import settings
 from django.utils.module_loading import import_string
+
 # from rest_framework.settings import APISettings
 
 CHANNELS_BINDING = getattr(settings, 'CHANNELS_BINDING', {})
@@ -9,6 +11,7 @@ DEFAULT_CHANNELS_BINDING = {
         'channels_binding.authentification.DefaultDjangoUser',
     ),
     "DEFAULT_PAGE_SIZE": 25,
+    "AUTO_CONNECT_MODEL_SIGNALS": True,
     "ANONYMOUS_CONNECTION_ALLOWED": False,
 }
 

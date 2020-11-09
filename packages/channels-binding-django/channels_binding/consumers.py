@@ -111,13 +111,15 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                     if not isinstance(payload, (list, dict)):
                         payload = {}
                     binding.today = datetime.date.today()
-                    t0 = time.time()
+                    if settings.DEBUG:
+                        t0 = time.time()
                     method = getattr(binding, method_name)
                     outdata = await method(payload)
                     if outdata:
                         await binding.reflect(method_name, outdata)
-                    t = time.time() - t0
-                    print(f'Event {event} takes {round(t, 2)} seconds')
+                    if settings.DEBUG:
+                        t = time.time() - t0
+                        print(f'Event {event} takes {round(t, 2)} seconds')
                     counter += 1
             if not counter:
                 logger.warning(f'No binding found for {event}#{self.hash}')

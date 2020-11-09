@@ -1,4 +1,4 @@
-from channels_binding.utils import send_sync
+from channels_binding.utils import send, send_sync
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.signals import m2m_changed, post_delete, post_save
 
@@ -15,16 +15,16 @@ class AsyncSignalsModelBinding(object):
     @classmethod
     async def post_save(cls, sender, instance, created, *args, **kwargs):
         bind = cls._lazy
-        send_sync('updated', dict(id=instance.pk), stream=bind.stream, group=bind.stream)
+        await send('updated', dict(id=instance.pk), stream=bind.stream, group=bind.stream)
 
     @classmethod
-    async def m2m_changed(cls, sender, instance, action, reverse, model, pk_set, *args, **kwargs):
+    def m2m_changed(cls, sender, instance, action, reverse, model, pk_set, *args, **kwargs):
         if action.startswith('post'):
             bind = cls._lazy
             send_sync('updated', dict(id=instance.pk), stream=bind.stream, group=bind.stream)
 
     @classmethod
-    async def post_delete(cls, sender, instance, *args, **kwargs):
+    def post_delete(cls, sender, instance, *args, **kwargs):
         bind = cls._lazy
         send_sync('delete', dict(success=True, id=instance.pk), stream=bind.stream, group=bind.stream)
 

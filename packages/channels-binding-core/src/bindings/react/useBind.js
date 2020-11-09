@@ -89,6 +89,7 @@ const useBind = props => {
 
     return {
         stream,
+        params,
         event,
         consumer,
         hash,
