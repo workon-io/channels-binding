@@ -9,22 +9,22 @@ __all__ = [
 class AsyncRetrieveModelBinding(object):
 
     @bind('retrieve')
-    async def retrieve(self, data, *args, instance=None, **kwargs):
+    async def retrieve(self, request):
 
-        instance = instance or await self.get_object(data, create=False)
+        instance = await self.get_object(request.data, create=False)
         if isinstance(instance, list):
             retrieve_data = []
             for inst in instance:
-                inst_data = await self.serialize_retrieve(inst, data)
+                inst_data = await self.serialize_retrieve(request, inst)
                 inst_data.update(id=inst.pk)
                 retrieve_data.append(inst_data)
         else:
-            retrieve_data = await self.serialize_retrieve(instance, data)
+            retrieve_data = await self.serialize_retrieve(request, instance)
             retrieve_data.update(id=instance.pk)
             if hasattr(self, 'serialize_retrieve_extra'):
-                retrieve_data.update(await self.serialize_retrieve_extra(instance, data))
+                retrieve_data.update(await self.serialize_retrieve_extra(request, instance))
 
-        await self.reflect('retrieve', retrieve_data, *args, **kwargs)
+        await request.reflect(retrieve_data)
 
     async def serialize_retrieve(self, instance, data):
         return model_to_dict(instance)

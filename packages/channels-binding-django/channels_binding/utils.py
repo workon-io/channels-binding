@@ -32,7 +32,7 @@ def get_binding(stream):
     return registered_lazy_binding_by_stream.get(stream)
 
 
-async def send(event, data, stream=None, hash=None, group=None, user=None, consumer=None, binding=None):
+async def send(event, data, stream=None, uid=None, group=None, user=None, consumer=None, binding=None):
     # Send a event message
     if binding:
         layer = binding.consumer.channel_layer
@@ -44,8 +44,8 @@ async def send(event, data, stream=None, hash=None, group=None, user=None, consu
         stream = binding.stream
     if stream:
         event = f'{stream}.{event}'
-    if hash:
-        event = f'{event}#{hash}'
+    if uid:
+        event = f'{event}#{uid}'
     message = await encode_json({'event': event, 'data': data})
     # print('----=> SEND', event, group)
 

@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import inspect
 import json
@@ -15,6 +16,7 @@ from django.conf import settings
 from . import settings as self_settings
 from .bindings.registry import (registered_binding_classes,
                                 registered_binding_events)
+from .request import AsyncRequest
 from .utils import send, send_sync
 
 logger = logging.getLogger(__name__)
@@ -30,7 +32,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         self.user = None
         self.user_id = None
         self.user_group_name = None
-        self.hash = None
+        self.uid = None
         self.groups = set('__all__')
         self.actions = {}
         self.bindings_by_class = {}
@@ -96,34 +98,17 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(group, self.channel_name)
 
     async def receive(self, text_data):
+        asyncio.create_task(self.parallel_receive(text_data))
+
+    async def parallel_receive(self, text_data):
         try:
-            data = json.loads(text_data)
-            event_hash = data['event'].split('#', 1)
-            event = event_hash[0].strip()
-            self.hash = event_hash[-1].strip() if len(event_hash) == 2 else None
-            payload = data.get('data', {})
-            events = registered_binding_events.get(event, [])
-            counter = 0
-            for binding_class, method_name in events:
-                binding = self.bindings_by_class.get(binding_class, None)
-                if binding:
-                    await self.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
-                    if not isinstance(payload, (list, dict)):
-                        payload = {}
-                    binding.today = datetime.date.today()
-                    if settings.DEBUG:
-                        t0 = time.time()
-                    method = getattr(binding, method_name)
-                    outdata = await method(payload)
-                    if outdata:
-                        await binding.reflect(method_name, outdata)
-                    if settings.DEBUG:
-                        t = time.time() - t0
-                        print(f'Event {event} takes {round(t, 2)} seconds')
-                    counter += 1
-            if not counter:
-                logger.warning(f'No binding found for {event}#{self.hash}')
-                await self.lazy_send('error', f'No binding found for {event}#{self.hash}')
+            if settings.DEBUG:
+                t0 = time.time()
+            request = AsyncRequest(self, text_data)
+            await request.apply()
+            if settings.DEBUG:
+                t = time.time() - t0
+                print(f'Event AsyncRequest {request.event}#{request.uid} takes {round(t, 2)} seconds')
 
         except RuntimeError as e:
             logger.error(traceback.format_exc())
@@ -136,12 +121,12 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     # Send a event message
     async def lazy_send(self, *args, **kwargs):
-        kwargs['hash'] = self.hash
+        kwargs['uid'] = self.uid
         kwargs['consumer'] = self
         await send(*args, **kwargs)
 
     def send_sync(self, *args, **kwargs):
-        kwargs['hash'] = self.hash
+        kwargs['uid'] = self.uid
         kwargs['consumer'] = self
         send_sync(*args, **kwargs)
 

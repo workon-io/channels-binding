@@ -1,4 +1,5 @@
 import Consumer from './Consumer'
+import ConcurrentConsumer from './ConcurrentConsumer'
 
 const registry = {}
 
