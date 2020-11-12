@@ -19,13 +19,13 @@ class AsyncModelBinding(object):
         else:
             return self.queryset.all()
 
-    async def get_object(self, data, create=False):
-        pk = data.get(self.data_pk, None)
+    async def get_object(self, request, create=False):
+        pk = request.uid or request.data.get(self.data_pk, None)
         try:
             if isinstance(pk, list):
-                return list((await self.get_queryset(data)).filter(**{f'{self.data_pk}__in': pk}))
+                return list((await self.get_queryset(request)).filter(**{f'{self.data_pk}__in': pk}))
             else:
-                return (await self.get_queryset(data)).get(**{self.data_pk: pk})
+                return (await self.get_queryset(request)).get(**{self.data_pk: pk})
         except self.model.DoesNotExist as e:
             if create:
                 return self.model()

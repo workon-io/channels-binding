@@ -23,7 +23,7 @@ def async_form_data(bind, data):
 
 class AsyncFormModelBinding(object):
 
-    post_save_connect = True
+    post_save_connect = False
     form_class = None
     form_fields = None
 

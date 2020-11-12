@@ -44,8 +44,8 @@ class AsyncRequest:
                     await binding.reflect(method_name, outdata, uid=self.uid)
                 counter += 1
         if not counter:
-            logger.warning(f'No binding found for {event}#{uid}')
-            await self.consumer.lazy_send('error', f'No binding found for {event}#{uid}')
+            logger.warning(f'No binding found for {self.event}')
+            await self.consumer.lazy_send('error', f'No binding found for {self.event}')
 
     async def reflect(self, data):
 

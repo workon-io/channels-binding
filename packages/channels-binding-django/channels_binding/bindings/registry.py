@@ -27,7 +27,7 @@ class RegisteredBindingMetaClass(type):
             binding_class._lazy = binding_class()
             binding_class._lazy_bindings_by_stream = registered_lazy_binding_by_stream
             binding_class._lazy_bindings_by_stream[stream] = binding_class._lazy
-            binding_class.connect_signals()
+            # binding_class.connect_signals()
 
             for method_name in dir(binding_class):
                 method = getattr(binding_class, method_name)

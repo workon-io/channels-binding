@@ -11,7 +11,7 @@ class AsyncRetrieveModelBinding(object):
     @bind('retrieve')
     async def retrieve(self, request):
 
-        instance = await self.get_object(request.data, create=False)
+        instance = await self.get_object(request, create=False)
         if isinstance(instance, list):
             retrieve_data = []
             for inst in instance:
@@ -26,5 +26,5 @@ class AsyncRetrieveModelBinding(object):
 
         await request.reflect(retrieve_data)
 
-    async def serialize_retrieve(self, instance, data):
+    async def serialize_retrieve(self, request, instance):
         return model_to_dict(instance)

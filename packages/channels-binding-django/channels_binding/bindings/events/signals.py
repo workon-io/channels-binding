@@ -9,8 +9,8 @@ __all__ = [
 
 class AsyncSignalsModelBinding(object):
 
-    post_save_connect = True
-    post_delete_connect = True
+    post_save_connect = False
+    post_delete_connect = False
 
     @classmethod
     async def post_save(cls, sender, instance, created, *args, **kwargs):
