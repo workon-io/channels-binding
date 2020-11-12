@@ -5,6 +5,7 @@ export { default as registerConsumer } from './consumers/registerConsumer'
 
 export { default as Bind } from './bindings/react/Bind'
 export { default as useBind } from './bindings/react/useBind'
+export { default as usePassiveBind } from './bindings/react/usePassiveBind'
 
 export { default as Search } from './bindings/react/Search'
 export { default as useSearch } from './bindings/react/useSearch'

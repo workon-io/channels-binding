@@ -3,6 +3,11 @@ import React from 'react'
 
 
 const useBind = props => {
+
+    _.isString(props) && (props = {
+        event: props
+    })
+
     const {
         action,
         data: defaultData,
