@@ -55,8 +55,9 @@ const useBind = props => {
             consumer = registry[consumer_event[0]]
             consumerEvent = consumer_event[1]
             if (consumer) {
-                send = outcomingData => {
-                    setState({ ...state, fetching: true })
+                send = (outcomingData, silently = false) => {
+                    !silently && setState({ ...state, fetching: true })
+                    // silently && setState({ ...state })
                     consumer.send(consumerEvent, outcomingData || params)
                 }
                 dispose = () => consumer.disposeListener(consumerEvent, incommingData => {
@@ -85,6 +86,7 @@ const useBind = props => {
     }
 
     const refresh = () => { send(params) }
+    const dispatch = () => { send(params, true) }
     const setCompleteData = data => setState({ data, fetching: false })
 
     React.useEffect(() => {
@@ -101,6 +103,7 @@ const useBind = props => {
         hash,
         send,
         refresh,
+        dispatch,
         ...state,
     }
 }

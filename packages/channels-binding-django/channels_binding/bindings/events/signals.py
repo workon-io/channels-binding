@@ -1,3 +1,5 @@
+import asyncio
+
 from channels_binding.utils import send, send_sync
 from django.db.models.fields.related import ManyToManyField
 from django.db.models.signals import m2m_changed, post_delete, post_save
@@ -12,21 +14,39 @@ class AsyncSignalsModelBinding(object):
     post_save_connect = False
     post_delete_connect = False
 
+    async def _post_save(cls, instance):
+        binding = cls._lazy
+        await send(f'updated#{instance.pk}', True, stream=binding.stream, group=binding.stream)
+
     @classmethod
-    async def post_save(cls, sender, instance, created, *args, **kwargs):
-        bind = cls._lazy
-        await send('updated', dict(id=instance.pk), stream=bind.stream, group=bind.stream)
+    def post_save(cls, sender, instance, created, *args, **kwargs):
+        try:
+            asyncio.run(cls._post_save(cls, instance))
+        except RuntimeError:
+            asyncio.create_task(cls._post_save(cls, instance))
+
+    async def _m2m_changed(cls, instance, action):
+        if action.startswith('post'):
+            binding = cls._lazy
+            await send(f'updated#{instance.pk}', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def m2m_changed(cls, sender, instance, action, reverse, model, pk_set, *args, **kwargs):
-        if action.startswith('post'):
-            bind = cls._lazy
-            send_sync('updated', dict(id=instance.pk), stream=bind.stream, group=bind.stream)
+        try:
+            asyncio.run(cls._m2m_changed(cls, instance, action))
+        except RuntimeError:
+            asyncio.create_task(cls._m2m_changed(cls, instance, action))
+
+    async def _post_delete(cls, instance):
+        binding = cls._lazy
+        await send(f'deleted#{instance.pk}', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def post_delete(cls, sender, instance, *args, **kwargs):
-        bind = cls._lazy
-        send_sync('delete', dict(success=True, id=instance.pk), stream=bind.stream, group=bind.stream)
+        try:
+            asyncio.run(cls._post_delete(cls, instance))
+        except RuntimeError:
+            asyncio.create_task(cls._post_delete(cls, instance))
 
     @classmethod
     def connect_signals(cls, connected=True):

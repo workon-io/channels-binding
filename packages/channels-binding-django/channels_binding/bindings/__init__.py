@@ -79,6 +79,6 @@ class AsyncBinding(
     AsyncSaveModelBinding,
     AsyncDeleteModelBinding,
     AsyncFormModelBinding,
-    # AsyncSignalsModelBinding
+    AsyncSignalsModelBinding
 ):
     pass
