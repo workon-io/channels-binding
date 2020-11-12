@@ -47,7 +47,7 @@ class AsyncRequest:
             logger.warning(f'No binding found for {self.event}')
             await self.consumer.lazy_send('error', f'No binding found for {self.event}')
 
-    async def reflect(self, data):
+    async def reflect(self, data, event=None):
 
-        message = await encode_json({'event': self.event, 'data': data})
+        message = await encode_json({'event': event or self.event, 'data': data})
         await self.consumer.send(text_data=message)

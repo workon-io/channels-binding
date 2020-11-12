@@ -18,13 +18,15 @@ class AsyncRetrieveModelBinding(object):
                 inst_data = await self.serialize_retrieve(request, inst)
                 inst_data.update(id=inst.pk)
                 retrieve_data.append(inst_data)
+            await request.reflect(retrieve_data)
+
         else:
             retrieve_data = await self.serialize_retrieve(request, instance)
             retrieve_data.update(id=instance.pk)
             if hasattr(self, 'serialize_retrieve_extra'):
                 retrieve_data.update(await self.serialize_retrieve_extra(request, instance))
 
-        await request.reflect(retrieve_data)
+            await request.reflect(retrieve_data)
 
     async def serialize_retrieve(self, request, instance):
         return model_to_dict(instance)

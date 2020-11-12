@@ -40,10 +40,11 @@ const useBind = props => {
         event = _.trim(`${stream}.${action}`)
     }
 
-    listen = _.isArray(listen) ? listen : (listen ? [listen] : [JSON.stringify(params)])
+    event && hash && (event = `${event}#${hash}`)
+
+    listen = _.isArray(listen) ? listen : (listen ? [listen] : [event, JSON.stringify(params)])
 
     if (event) {
-        hash && (event = `${event}#${hash}`)
         const consumer_event = _.split(event, ':')
         if (consumer_event.length >= 2) {
             consumer = registry[consumer_event[0]]
