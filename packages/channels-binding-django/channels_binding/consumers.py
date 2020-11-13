@@ -1,23 +1,17 @@
 import asyncio
-import datetime
 import inspect
-import json
 import logging
-import os
 import time
 import traceback
 
-import requests
-from channels.db import database_sync_to_async
 from channels.exceptions import DenyConnection
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 
 from . import settings as self_settings
-from .bindings.registry import (registered_binding_classes,
-                                registered_binding_events)
+from .bindings.registry import registered_binding_classes
 from .request import AsyncRequest
-from .utils import send, send_sync
+from .utils import encode_json, send, send_sync
 
 logger = logging.getLogger(__name__)
 __all__ = [
@@ -102,22 +96,20 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     async def parallel_receive(self, text_data):
         try:
+
             if settings.DEBUG:
                 t0 = time.time()
             request = AsyncRequest(self, text_data)
             await request.apply()
             if settings.DEBUG:
                 t = time.time() - t0
-                print(f'Event AsyncRequest {request.event}#{request.uid} takes {round(t, 2)} seconds')
+                logger.debug(f'Event AsyncRequest {request.event}#{request.uid} takes {round(t, 2)} seconds')
 
         except RuntimeError as e:
             logger.error(traceback.format_exc())
-            await self.lazy_send('error', traceback.format_exc())
+            message = await encode_json({'error': traceback.format_exc()})
+            await self.send(text_data=message)
             await self.close()
-
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            await self.lazy_send('error', traceback.format_exc())
 
     # Send a event message
     async def lazy_send(self, *args, **kwargs):

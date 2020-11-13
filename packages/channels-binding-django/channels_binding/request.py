@@ -1,16 +1,13 @@
 import datetime
 import json
 import logging
+import traceback
 
-from django.conf import settings
-
-from .bindings.registry import (registered_binding_classes,
-                                registered_binding_events)
+from .bindings.registry import registered_binding_events
 from .utils import encode_json
 
-__all__ = ['AsyncRequest']
-
 logger = logging.getLogger(__name__)
+__all__ = ['AsyncRequest']
 
 
 class AsyncRequest:
@@ -32,20 +29,27 @@ class AsyncRequest:
 
     async def apply(self):
 
-        events = registered_binding_events.get(self.pure_event, [])
-        counter = 0
-        for binding_class, method_name in events:
-            binding = self.consumer.bindings_by_class.get(binding_class, None)
-            if binding:
-                await self.consumer.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
-                method = getattr(binding, method_name)
-                outdata = await method(self)
-                if outdata:
-                    await binding.reflect(method_name, outdata, uid=self.uid)
-                counter += 1
-        if not counter:
-            logger.warning(f'No binding found for {self.event}')
-            await self.consumer.lazy_send('error', f'No binding found for {self.event}')
+        try:
+            events = registered_binding_events.get(self.pure_event, [])
+            counter = 0
+            for binding_class, method_name in events:
+                binding = self.consumer.bindings_by_class.get(binding_class, None)
+                if binding:
+                    await self.consumer.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
+                    method = getattr(binding, method_name)
+                    outdata = await method(self)
+                    if outdata:
+                        await binding.reflect(method_name, outdata, uid=self.uid)
+                    counter += 1
+            if not counter:
+                logger.warning('No binding found for {}'.format(self.event))
+                message = await encode_json({'event': self.event, 'error': 'No binding found for {}'.format(self.event)})
+                await self.consumer.send(text_data=message)
+
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            message = await encode_json({'event': self.event, 'error': traceback.format_exc()})
+            await self.consumer.send(text_data=message)
 
     async def reflect(self, data, event=None):
 

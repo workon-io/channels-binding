@@ -36,7 +36,7 @@ class Consumer {
         if (this.connected) return;
         this.active = true;
         this.pending = true;
-        this.options.debug && this.logSuccess('Connecting', this.url.href)
+        this.options.debug && this.logWarning('??', this.url.href)
         this.socket = new REWebSocket({ url: this.url })
         this.socket.addEventListener('open', (...args) => this.onOpen(...args));
         this.socket.addEventListener('close', (...args) => this.onClose(...args));
@@ -47,7 +47,7 @@ class Consumer {
     onOpen() {
         this.pending = false;
         this.connected = true;
-        this.options.debug && this.logSuccess('Connected')
+        this.options.debug && this.logSuccess('<>', '!Connected')
         _.map(this.pending_calls, (data, event) => {
             delete this.pending_calls[event]
             this.send(event, data)
@@ -75,7 +75,7 @@ class Consumer {
     onClose(message) {
         this.pending = false;
         this.connected = false
-        this.options.debug && this.logError('Closed')
+        this.options.debug && this.logError('x>')
         this.updateState()
     }
 
@@ -92,7 +92,7 @@ class Consumer {
         }
         try {
             if (this.connected) {
-                this.options.debug && this.logInfo('Sent', event, this.options.debug > 1 && data);
+                this.options.debug && this.logWarning('>>', event, this.options.debug > 1 && data);
                 if (delay) {
                     setTimeout(() => (
                         this.socket.send(JSON.stringify({ event, data }))
@@ -124,20 +124,20 @@ class Consumer {
 
     disposeListener(event, method) {
         const key = Math.random()
-        this.options.debug && this.options.debug > 2 && this.logInfo(`addListener: ${event}.${method && method.name}`);
+        this.options.debug && this.options.debug > 2 && this.logInfo(`+: ${event}.${method && method.name}`);
         this.connect()
         !this.listeners[event] && (this.listeners[event] = {})
         // Replace the method ref pointer
         this.listeners[event][key] = method
         return () => {
-            this.options.debug && this.options.debug > 2 && this.logInfo(`removeListener: ${event}.${method && method.name}`);
+            this.options.debug && this.options.debug > 2 && this.logInfo(`-: ${event}.${method && method.name}`);
             try { delete this.listeners[event][key] }
-            catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`removeListener: ${event}.${method && method.name} not found.`) }
+            catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`-: ${event}.${method && method.name} not found.`) }
         }
     }
 
     addListener(event, method) {
-        this.options.debug && this.options.debug > 2 && this.logInfo(`addListener: ${event}.${method && method.name}`);
+        this.options.debug && this.options.debug > 2 && this.logInfo(`-: ${event}.${method && method.name}`);
         this.connect()
         !this.listeners[event] && (this.listeners[event] = {})
         // Replace the method ref pointer
@@ -148,18 +148,18 @@ class Consumer {
     }
 
     removeListener(event, method) {
-        this.options.debug && this.options.debug > 2 && this.logInfo(`removeListener: ${event}.${method && method.name}`);
+        this.options.debug && this.options.debug > 2 && this.logInfo(`+: ${event}.${method && method.name}`);
         try { delete this.listeners[event][method] }
-        catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`removeListener: ${event}.${method && method.name} not found.`) }
+        catch (err) { this.options.debug && this.options.debug > 2 && this.logError(`+: ${event}.${method && method.name} not found.`) }
     }
 
     receive(message) {
         const data = JSON.parse(message.data)
-        if (data.event == 'error') {
-            this.options.debug && this.logError('Error', this.options.debug > 1 && data.data)
+        if (data.error) {
+            this.options.debug && this.logError('<!', data.event, this.options.debug > 0 && data.error)
         }
         else if (data.event) {
-            this.options.debug && this.logSuccess('Receive', data.event, this.options.debug > 1 && data.data)
+            this.options.debug && this.logSuccess('<<', data.event, this.options.debug > 1 && data.data)
             _.has(this.listeners, data.event) &&
                 _.map(this.listeners[data.event], method => method && method(data.data, this))
 
@@ -238,20 +238,24 @@ class Consumer {
         return url.href
     }
 
-    log(message, color, ...messages) {
-        console.log(`%c [${_.toUpper(this.name)}] %c ${message}`, `font-weight:bolder; ${color}`, 'font-weight:bold', ...messages)
+    log(message, background, color, ...messages) {
+        console.log(`%c${message}%c ${this.name}:`, ` font-weight:bolder; color: white; background: ${background}`, `margin-right: -5px; font-weight:bold; color: ${color}`, ...messages)
     }
 
     logSuccess(message, ...messages) {
-        this.log(message, 'background: #bada55; color: #222', ...messages)
+        this.log(message, '#bada55', '#bada55', ...messages)
+    }
+
+    logWarning(message, ...messages) {
+        this.log(message, 'orange', 'orange', ...messages)
     }
 
     logInfo(message, ...messages) {
-        this.log(message, 'background: #222; color: #bada55', ...messages)
+        this.log(message, '#bada55', '#222', ...messages)
     }
 
     logError(message, ...messages) {
-        this.log(message, 'background: red; color: white', ...messages)
+        this.log(message, 'red', 'red', ...messages)
     }
 
 }
