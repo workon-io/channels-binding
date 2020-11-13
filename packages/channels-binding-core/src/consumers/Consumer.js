@@ -92,7 +92,7 @@ class Consumer {
         }
         try {
             if (this.connected) {
-                this.options.debug && this.logWarning('>>', event, this.options.debug > 1 && data);
+                this.options.debug && this.logWarning('>>', event, this.options.debug > 1 ? data : '');
                 if (delay) {
                     setTimeout(() => (
                         this.socket.send(JSON.stringify({ event, data }))
@@ -156,10 +156,10 @@ class Consumer {
     receive(message) {
         const data = JSON.parse(message.data)
         if (data.error) {
-            this.options.debug && this.logError('<!', data.event, this.options.debug > 0 && data.error)
+            this.options.debug && this.logError('<!', data.event, this.options.debug > 0 ? data.error : '')
         }
         else if (data.event) {
-            this.options.debug && this.logSuccess('<<', data.event, this.options.debug > 1 && data.data)
+            this.options.debug && this.logSuccess('<<', data.event, this.options.debug > 1 ? data.data : '')
             _.has(this.listeners, data.event) &&
                 _.map(this.listeners[data.event], method => method && method(data.data, this))
 
