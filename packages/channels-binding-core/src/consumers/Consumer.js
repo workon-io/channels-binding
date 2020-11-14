@@ -14,6 +14,16 @@ class Consumer {
             protocol: window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         })
 
+        try {
+            const url = new URL(this.options.path)
+            this.options.host = url.hostname
+            this.options.port = url.port
+            this.options.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+            this.options.path = url.pathname
+        }
+        catch (e) {
+
+        }
 
         this.url = new URL(`${this.options.protocol}//${this.options.host}:${this.options.port}`)
         this.url.pathname = this.options.path || ''
@@ -75,7 +85,7 @@ class Consumer {
     onClose(message) {
         this.pending = false;
         this.connected = false
-        this.options.debug && this.logError('x>')
+        this.options.debug && this.logError('<x>')
         this.updateState()
     }
 
