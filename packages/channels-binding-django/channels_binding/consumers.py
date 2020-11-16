@@ -54,6 +54,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         return self.bindings_by_stream.get(stream)
 
     async def connect(self):
+        print(self.scope['user'])
         try:
             if inspect.iscoroutinefunction(self.get_user):
                 self.user = await self.get_user()

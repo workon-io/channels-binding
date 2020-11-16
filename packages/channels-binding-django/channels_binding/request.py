@@ -3,6 +3,9 @@ import json
 import logging
 import traceback
 
+from channels.auth import login
+from channels.db import database_sync_to_async
+
 from .bindings.registry import registered_binding_events
 from .utils import encode_json
 
@@ -52,6 +55,14 @@ class AsyncRequest:
             await self.consumer.send(text_data=message)
 
     # Respond to the current socket
+
+    async def login(self, user):
+        self.user = user
+        self.consumer.user = self.user
+        await login(self.consumer.scope, self.user, backend=None)
+        await database_sync_to_async(self.consumer.scope["session"].save)()
+        self.consumer.scope["user"] = user
+        return user
 
     def switch(self, stream):
         return self.consumer.bindings_by_stream.get(stream)
