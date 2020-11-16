@@ -38,7 +38,7 @@ class RegisteredBindingMetaClass(type):
                     name = kwargs.get('name', args[0] if len(args) else method_name) or method_name
                     event = f'{stream}.{name}'
                     events = registered_binding_events.setdefault(event, [])
-                    events.append([binding_class, method_name])
+                    events.append([binding_class, method_name, name])
 
             if stream:
                 if stream in stream_duplicity:

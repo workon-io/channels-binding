@@ -43,7 +43,7 @@ class Consumer {
     }
 
     connect() {
-        if (this.connected) return;
+        if (this.connected || this.pending) return;
         this.active = true;
         this.pending = true;
         this.options.debug && this.logWarning('?>', this.url.href)
@@ -51,6 +51,12 @@ class Consumer {
         this.socket.addEventListener('open', (...args) => this.onOpen(...args));
         this.socket.addEventListener('close', (...args) => this.onClose(...args));
         this.socket.addEventListener('message', (...args) => this.receive(...args));
+        this.socket.addEventListener('error', (...args) => this.onError(...args));
+        this.updateState()
+    }
+    onError() {
+        this.pending = false;
+        this.connected = false;
         this.updateState()
     }
 
@@ -66,6 +72,7 @@ class Consumer {
     }
 
     reconnect() {
+        if (this.pending) return;
         this.close()
         this.connect()
     }

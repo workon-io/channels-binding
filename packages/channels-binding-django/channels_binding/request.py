@@ -32,14 +32,14 @@ class AsyncRequest:
         try:
             events = registered_binding_events.get(self.pure_event, [])
             counter = 0
-            for binding_class, method_name in events:
+            for binding_class, method_name, name in events:
                 binding = self.consumer.bindings_by_class.get(binding_class, None)
                 if binding:
                     await self.consumer.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
                     method = getattr(binding, method_name)
                     outdata = await method(self)
                     if outdata:
-                        await binding.reflect(method_name, outdata, uid=self.uid)
+                        await binding.reflect(name, outdata, uid=self.uid)
                     counter += 1
             if not counter:
                 logger.warning('No binding found for {}'.format(self.event))
