@@ -46,7 +46,7 @@ class Consumer {
         if (this.connected) return;
         this.active = true;
         this.pending = true;
-        this.options.debug && this.logWarning('??', this.url.href)
+        this.options.debug && this.logWarning('?>', this.url.href)
         this.socket = new REWebSocket({ url: this.url })
         this.socket.addEventListener('open', (...args) => this.onOpen(...args));
         this.socket.addEventListener('close', (...args) => this.onClose(...args));
@@ -85,24 +85,24 @@ class Consumer {
     onClose(message) {
         this.pending = false;
         this.connected = false
-        this.options.debug && this.logError('<x>')
+        this.options.debug && this.logError('<x')
         this.updateState()
     }
 
     send(event, data, delay) {
         this.connect()
-        if (this.options.safetyLimit) {
+        // if (this.options.safetyLimit) {
 
-            this.event_limits[event] ? (this.event_limits[event] += 1) : (this.event_limits[event] = 1)
-            this.event_limits_to && clearTimeout(this.event_limits_to)
-            this.event_limits_to = setTimeout(() => delete this.event_limits[event], 1000);
-            if (this.event_limits[event] > 100) {
-                throw 'Channels binding Consumer.safetyLimit => Too many event sending occured in too few ms ellasped.'
-            }
-        }
+        //     this.event_limits[event] ? (this.event_limits[event] += 1) : (this.event_limits[event] = 1)
+        //     this.event_limits_to && clearTimeout(this.event_limits_to)
+        //     this.event_limits_to = setTimeout(() => delete this.event_limits[event], 1000);
+        //     if (this.event_limits[event] > 100) {
+        //         throw 'Channels binding Consumer.safetyLimit => Too many event sending occured in too few ms ellasped.'
+        //     }
+        // }
         try {
             if (this.connected) {
-                this.options.debug && this.logWarning('>>', event, this.options.debug > 1 ? data : '');
+                this.options.debug && this.logInfo('>>', event, this.options.debug > 1 ? data : '');
                 if (delay) {
                     setTimeout(() => (
                         this.socket.send(JSON.stringify({ event, data }))
@@ -118,6 +118,7 @@ class Consumer {
             }
         }
         catch (e) {
+            this.pending_calls[event] = data
             this.reconnect()
         }
     }
@@ -249,11 +250,17 @@ class Consumer {
     }
 
     log(message, background, color, ...messages) {
-        console.log(`%c${message}%c ${this.name}:`, ` font-weight:bolder; color: white; background: ${background}`, `margin-right: -5px; font-weight:bold; color: ${color}`, ...messages)
+        console.log(
+            `%c${message} %c${this.name}%c:`,
+            `font-weight:bold; color: ${color}`,
+            `margin-right: -5px; font-weight:bolder; color: white; background: ${background}`,
+            `color: ${background}`,
+            ...messages
+        )
     }
 
     logSuccess(message, ...messages) {
-        this.log(message, '#bada55', '#bada55', ...messages)
+        this.log(message, '#6eca1b', '#6eca1b', ...messages)
     }
 
     logWarning(message, ...messages) {
@@ -261,7 +268,7 @@ class Consumer {
     }
 
     logInfo(message, ...messages) {
-        this.log(message, '#bada55', '#222', ...messages)
+        this.log(message, '#2196f3', '#2196f3', ...messages)
     }
 
     logError(message, ...messages) {
