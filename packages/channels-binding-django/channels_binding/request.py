@@ -39,7 +39,7 @@ class AsyncRequest:
                     method = getattr(binding, method_name)
                     outdata = await method(self)
                     if outdata:
-                        await binding.reflect(name, outdata, uid=self.uid)
+                        await self.reflect(outdata)
                     counter += 1
             if not counter:
                 logger.warning('No binding found for {}'.format(self.event))
@@ -51,7 +51,32 @@ class AsyncRequest:
             message = await encode_json({'event': self.event, 'error': traceback.format_exc()})
             await self.consumer.send(text_data=message)
 
-    async def reflect(self, data, event=None):
+    # Respond to the current socket
 
+    def switch(self, stream):
+        return self.consumer.bindings_by_stream.get(stream)
+
+    def get_binding(self, *args, **kwargs):
+        return self.swicth(*args, **kwargs)
+
+    async def reflect(self, data, event=None):
         message = await encode_json({'event': event or self.event, 'data': data})
         await self.consumer.send(text_data=message)
+
+    # Respond to the current streamed group attached sockets
+    async def dispatch(self, *args, **kwargs):
+        await self.send(*args, group=kwargs.get('stream', self.stream), **kwargs)
+
+    # Respond to all sockets
+    async def broadcast(self, *args, **kwargs):
+        await self.send(*args, group='__all__', **kwargs)
+
+    # Respond to the current streamed group attached sockets
+    async def subscribe(self, group=None):
+        if self.consumer:
+            await self.consumer.subscribe(group or self.stream)
+
+    # Respond to the current streamed group attached sockets
+    async def unsubscribe(self, group=None):
+        if self.consumer:
+            await self.consumer.unsubscribe(group or self.stream)

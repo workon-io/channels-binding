@@ -64,7 +64,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
                 self.bindings_by_class = {}
                 self.bindings_by_stream = {}
                 for bc in registered_binding_classes:
-                    binding = bc(self)
+                    binding = bc()
                     self.bindings_by_class[bc] = binding
                     self.bindings_by_stream[binding.stream] = binding
                 await self.subscribe('__all__')
