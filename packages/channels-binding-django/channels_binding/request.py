@@ -64,11 +64,21 @@ class AsyncRequest:
         self.consumer.scope["user"] = user
         return user
 
-    def switch(self, stream):
-        return self.consumer.bindings_by_stream.get(stream)
+    async def tunnel(self, stream, method, *args):
+        binding = self.consumer.bindings_by_stream.get(stream)
+        return await getattr(binding, method)(self, *args)
 
+    async def switch(self, stream, method=None, *args):
+        if method:
+            binding = self.consumer.bindings_by_stream.get(stream)
+            return await getattr(binding, method)(self, *args)
+
+        else:
+            return self.consumer.bindings_by_stream.get(stream)
+
+    # TODO: Deprecated
     def get_binding(self, *args, **kwargs):
-        return self.swicth(*args, **kwargs)
+        return self.consumer.bindings_by_stream.get(stream)
 
     async def reflect(self, data, event=None):
         message = await encode_json({'event': event or self.event, 'data': data})
