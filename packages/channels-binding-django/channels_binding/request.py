@@ -85,19 +85,33 @@ class AsyncRequest:
         await self.consumer.send(text_data=message)
 
     # Respond to the current streamed group attached sockets
-    async def dispatch(self, *args, **kwargs):
-        await self.send(*args, group=kwargs.get('stream', self.stream), **kwargs)
+    async def dispatch(self, data, stream, event=None):
+        layer = self.consumer.channel_layer
+        message = await encode_json(dict(
+            event=event or self.event,
+            data=data
+        ))
+        await layer.group_send(stream, dict(
+            type='channel_message',
+            message=message
+        ))
 
     # Respond to all sockets
-    async def broadcast(self, *args, **kwargs):
-        await self.send(*args, group='__all__', **kwargs)
+    async def broadcast(self, data, event=None):
+        layer = self.consumer.channel_layer
+        message = await encode_json(dict(
+            event=event or self.event,
+            data=data
+        ))
+        await layer.group_send('__all__', dict(
+            type='channel_message',
+            message=message
+        ))
 
     # Respond to the current streamed group attached sockets
-    async def subscribe(self, group=None):
-        if self.consumer:
-            await self.consumer.subscribe(group or self.stream)
+    async def subscribe(self, stream):
+        await self.consumer.subscribe(stream or self.stream)
 
     # Respond to the current streamed group attached sockets
-    async def unsubscribe(self, group=None):
-        if self.consumer:
-            await self.consumer.unsubscribe(group or self.stream)
+    async def unsubscribe(self, stream):
+        await self.consumer.unsubscribe(stream or self.stream)

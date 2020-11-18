@@ -1,23 +1,25 @@
-from rest_framework import routers
-from django.conf import settings
-from django.http import HttpResponse
-from django.urls import include, path, re_path
-from django.conf.urls.static import static
-from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
+import os
+
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.sessions import SessionMiddlewareStack
 from channels_binding.consumers import AsyncConsumer
+from django.http import HttpResponse
+from django.urls import re_path
 
+PUBLIC_PATH = os.environ.get('PUBLIC_PATH').strip('/')
+PUBLIC_WS_PATH = os.environ.get('PUBLIC_WS_PATH').strip('/')
 
 application = ProtocolTypeRouter({
     # (http->django views is added by default)
-    'websocket': SessionMiddlewareStack(
+    'websocket': SessionMiddlewareStack(AuthMiddlewareStack(
         URLRouter([
-            path('', AsyncConsumer, name="root"),
+            re_path(rf'^{PUBLIC_WS_PATH}/?$', AsyncConsumer, name="root"),
         ])
-    )
+    ))
 })
 
 urlpatterns = [
-    # re_path(r"^$", lambda request: HttpResponse(f"[OK] WSAPI CLEARVERSION")
-    # ),
+    re_path(rf"^{PUBLIC_WS_PATH}/?$", lambda request: HttpResponse(f"[OK] WSAPI COMPONENT")),
+
 ]

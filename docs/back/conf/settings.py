@@ -1,6 +1,8 @@
 import os
 from urllib.parse import urlparse
 
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '=*7-o@c_7g+!v+9wd1@bv4q+mhby#a1r2bs36yqc949uxqe69c'
 DEBUG = bool(int(os.environ.get('DEBUG', '0')))
@@ -18,10 +20,12 @@ else:
     ALLOWED_HOSTS = ['*.workon.io']
 
 INSTALLED_APPS = [
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'channels',
     'channels_binding',
-    'back',
+    'app',
 ]
 
 MIDDLEWARE = [
@@ -33,7 +37,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'conf.routing'
-AUTH_USER_MODEL = 'account.User'
+AUTH_USER_MODEL = 'app.User'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.environ.get('STATIC_ROOT', f'{STG_ROOT}static/')
@@ -54,7 +58,7 @@ DATABASES = {
         'USER': DATABASE.username,
         'PASSWORD': DATABASE.password,
         'PORT': DATABASE.port,
-        'CONN_MAX_AGE': 0,
+        'CONN_MAX_AGE': None,
     },
 }
 
@@ -64,15 +68,15 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [(REDIS.hostname, REDIS.port)],
+            'capacity': 1000,
+            'expiry': 5,
+            'hosts': [(REDIS.hostname, REDIS.port)],
         },
     },
 }
 CHANNELS_BINDING = {
-    "AUTHENTIFICATION_CLASSES": (
-        'conf.authentification.CompanyAPIMapping',
-    ),
     "DEFAULT_PAGE_SIZE": 25,
+    "AUTO_CONNECT_MODEL_SIGNALS": True,
     "ANONYMOUS_CONNECTION_ALLOWED": False,
 }
 

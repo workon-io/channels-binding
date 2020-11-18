@@ -1,42 +1,38 @@
 import ReactDOM from 'react-dom';
-import CssBaseline from "@material-ui/core/CssBaseline"
+import { CssBaseline } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/core/styles'
-import {
-    BrowserRouter as Router,
-    Switch,
-    Route,
-    Link
-} from "react-router-dom";
+import { registerConsumer } from '@channels-binding/core'
+import { BrowserRouter } from "react-router-dom";
+import { ScrollToTop } from 'libs'
 import theme from './theme'
-import printMe from './print.js';
+import Layout from './Layout';
+import Home from './Pages/Home'
+import GettingStarted from './Pages/GettingStarted'
+import Demo from './Pages/Demo'
 import './index.css';
 
 moment.locale('fr');
 
-const NotFound = () => <div>Not found</div>
+registerConsumer('django', {
+    path: `${PUBLIC_WS_PATH}`,
+    debug: DEBUG,
+})
 
-const Root = () => {
-
-    const [loaded, setLoaded] = React.useState(false)
-
-    React.useEffect(() => {
-        setLoaded(true)
-    }, [])
-
-    return (
-        <div className="app">
-            {
-                loaded ?
-                    <Router>
-                        <CssBaseline />
-                        <ThemeProvider theme={theme}>
-                        </ThemeProvider>
-                    </Router>
-                    :
-                    <Loading center={true} />
-            }
-        </div>
-    )
+if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(function () {
+        console.log('%c[HMR] RE-Render', 'background: #bada55; color: #222')
+        document.location.reload()
+    });
 }
-const renderApp = () => { ReactDOM.render(<Root />, document.getElementById('root')); }
-renderApp();
+ReactDOM.render(<BrowserRouter>
+    <ScrollToTop />
+    <CssBaseline />
+    <ThemeProvider theme={theme}>
+        <Layout>
+            <Home.Routes />
+            <GettingStarted.Routes />
+            <Demo.Routes />
+        </Layout>
+    </ThemeProvider>
+</BrowserRouter>, document.getElementById('root'));
