@@ -2,9 +2,10 @@ import { registry } from '../../consumers/registerConsumer'
 import React from 'react'
 
 
-const useBind = props => {
+const useBind = (props, options = {}) => {
 
     _.isString(props) && (props = {
+        ...options,
         event: props
     })
 
@@ -14,7 +15,8 @@ const useBind = props => {
         params = {},
         passive = false,
         intercept = null,
-        observe = null
+        observe = null,
+        delay = null
     } = props
     let {
         event,
@@ -91,7 +93,14 @@ const useBind = props => {
 
     React.useEffect(() => {
         const disposer = dispose()
-        !passive && send(params)
+        if (!passive) {
+            if (delay) {
+                setTimeout(() => send(params), delay)
+            }
+            else {
+                send(params)
+            }
+        }
         return disposer
     }, listen)
 

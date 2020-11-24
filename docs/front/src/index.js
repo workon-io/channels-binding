@@ -8,6 +8,7 @@ import theme from './theme'
 import Layout from './Layout';
 import Home from './Pages/Home'
 import GettingStarted from './Pages/GettingStarted'
+import API from './Pages/API'
 import Demo from './Pages/Demo'
 import './index.css';
 
@@ -33,6 +34,7 @@ ReactDOM.render(<BrowserRouter>
             <Home.Routes />
             <GettingStarted.Routes />
             <Demo.Routes />
+            <API.Routes />
         </Layout>
     </ThemeProvider>
 </BrowserRouter>, document.getElementById('root'));

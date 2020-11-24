@@ -1,6 +1,3 @@
-import Code from 'src/Code'
-
-
 const basePath = `${PUBLIC_PATH}API/`
 
 const link = (action, object) => {

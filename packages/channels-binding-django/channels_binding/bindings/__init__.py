@@ -39,4 +39,12 @@ class AsyncBinding(
     AsyncFormModelBinding,
     AsyncSignalsModelBinding
 ):
+    @bind('subscribe')
+    async def subscribe(self, request):
+        request.subscribe(self.stream)
+
+    @bind('unsubscribe')
+    async def unsubscribe(self, request):
+        request.unsubscribe(self.stream)
+
     pass

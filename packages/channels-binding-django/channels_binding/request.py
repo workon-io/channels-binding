@@ -110,8 +110,8 @@ class AsyncRequest:
 
     # Respond to the current streamed group attached sockets
     async def subscribe(self, stream):
-        await self.consumer.subscribe(stream or self.stream)
+        await self.consumer.subscribe(stream)
 
     # Respond to the current streamed group attached sockets
     async def unsubscribe(self, stream):
-        await self.consumer.unsubscribe(stream or self.stream)
+        await self.consumer.unsubscribe(stream)

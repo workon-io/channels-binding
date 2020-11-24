@@ -83,6 +83,7 @@ export default function SearchAppBar() {
                     </Typography>
                     <RouterTabs
                         routes={[
+                            { label: 'Home', to: require('src/Pages/Home').link('root') },
                             { label: 'Getting Started', to: require('src/Pages/GettingStarted').link('root') },
                             { label: 'Demo', to: require('src/Pages/Demo').link('root') },
                             { label: 'API', to: require('src/Pages/API').link('root') },

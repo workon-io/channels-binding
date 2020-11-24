@@ -15,7 +15,7 @@ class HungerBinding(AsyncBinding):
 
     @bind('sos')
     async def sos(self, request):
-        if not getattr(request.user, 'hunger_started', None):
+        if not getattr(request.user, 'hunger_started', False):
             life = 100
             request.user.hunger_started = True
             request.user.has_feed = False
@@ -48,4 +48,5 @@ class HungerBinding(AsyncBinding):
                     message='Thanks ! but in 5 sec i will hunger again'
                 ))
                 await asyncio.sleep(5)
+                request.user.hunger_started = False
                 await self.sos(request)
