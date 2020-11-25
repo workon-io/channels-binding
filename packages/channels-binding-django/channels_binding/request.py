@@ -30,6 +30,14 @@ class AsyncRequest:
         if not isinstance(self.data, (list, dict)):
             self.data = {}
 
+    @property
+    def session(self):
+        return self.consumer.session
+
+    @property
+    def scope(self):
+        return self.consumer.scope
+
     async def apply(self):
 
         try:
@@ -60,17 +68,22 @@ class AsyncRequest:
         self.user = user
         self.consumer.user = self.user
         await login(self.consumer.scope, self.user, backend=None)
+        self.consumer.scope["session"].save()
         await database_sync_to_async(self.consumer.scope["session"].save)()
-        self.consumer.scope["user"] = user
+        self.consumer.scope["user"] = self.user
+        user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
+        if user_id:
+            await self.subscribe(f'user.{user_id}')
+            await self.reflect('sessionid', getattr(self.session, 'session_key', None))
         return user
 
     async def tunnel(self, stream, method, *args):
-        binding = self.consumer.bindings_by_stream.get(stream)
+        binding=self.consumer.bindings_by_stream.get(stream)
         return await getattr(binding, method)(self, *args)
 
     async def switch(self, stream, method=None, *args):
         if method:
-            binding = self.consumer.bindings_by_stream.get(stream)
+            binding=self.consumer.bindings_by_stream.get(stream)
             return await getattr(binding, method)(self, *args)
 
         else:
@@ -81,13 +94,13 @@ class AsyncRequest:
         return self.consumer.bindings_by_stream.get(stream)
 
     async def reflect(self, data, event=None):
-        message = await encode_json({'event': event or self.event, 'data': data})
+        message=await encode_json({'event': event or self.event, 'data': data})
         await self.consumer.send(text_data=message)
 
     # Respond to the current streamed group attached sockets
     async def dispatch(self, data, stream, event=None):
-        layer = self.consumer.channel_layer
-        message = await encode_json(dict(
+        layer=self.consumer.channel_layer
+        message=await encode_json(dict(
             event=event or self.event,
             data=data
         ))
@@ -98,8 +111,8 @@ class AsyncRequest:
 
     # Respond to all sockets
     async def broadcast(self, data, event=None):
-        layer = self.consumer.channel_layer
-        message = await encode_json(dict(
+        layer=self.consumer.channel_layer
+        message=await encode_json(dict(
             event=event or self.event,
             data=data
         ))

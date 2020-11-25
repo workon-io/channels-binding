@@ -24,8 +24,7 @@ class AsyncConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
-        self.user_id = None
-        self.user_group_name = None
+        self.session = None
         self.uid = None
         self.groups = set('__all__')
         self.actions = {}
@@ -33,43 +32,44 @@ class AsyncConsumer(AsyncWebsocketConsumer):
         self.bindings_by_stream = {}
         self.authentifications = [cls() for cls in self_settings.AUTHENTIFICATION_CLASSES]
 
+    async def get_session(self):
+        return self.scope['session']
+
     async def get_user(self):
-        self.user = None
-        self.user_id = None
-        self.user_group_name = None
-        for auth in self.authentifications:
-            if hasattr(auth, 'get_user'):
-                if inspect.iscoroutinefunction(auth.get_user):
-                    self.user = await auth.get_user(self)
-                else:
-                    self.user = auth.get_user(self)
-                if self.user:
-                    self.user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
-                    if self.user_id:
-                        self.user_group_name = f'user.{self.user_id}'
-                    break
-        return self.user
+        return self.scope['user']
+        # self.user = None
+        # self.user_id = None
+        # self.user_group_name = None
+        # for auth in self.authentifications:
+        #     if hasattr(auth, 'get_user'):
+        #         if inspect.iscoroutinefunction(auth.get_user):
+        #             self.user = await auth.get_user(self)
+        #         else:
+        #             self.user = auth.get_user(self)
+        #         if self.user:
+        #             self.user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
+        #             if self.user_id:
+        #                 self.user_group_name = f'user.{self.user_id}'
+        #             break
+        # return self.user
 
     def get_binding(self, stream):
         return self.bindings_by_stream.get(stream)
 
     async def connect(self):
         try:
-            if inspect.iscoroutinefunction(self.get_user):
-                self.user = await self.get_user()
-            else:
-                self.user = self.get_user()
+            self.user = await self.get_user()
+            self.session = await self.get_session()
 
-            if self.user or self_settings.ANONYMOUS_CONNECTION_ALLOWED:
+            if (self.user and self.user.is_authenticated) or self_settings.ANONYMOUS_CONNECTION_ALLOWED:
                 self.bindings_by_class = {}
                 self.bindings_by_stream = {}
                 for bc in registered_binding_classes:
                     binding = bc()
                     self.bindings_by_class[bc] = binding
                     self.bindings_by_stream[binding.stream] = binding
-                await self.subscribe('__all__')
-                if self.user_group_name:
-                    await self.subscribe(self.user_group_name)
+                await self.subscribe_self()
+                await self.subscribe_broadcast()
                 await self.accept()
             else:
                 raise DenyConnection("Anonymous User is not allowed")
@@ -82,6 +82,14 @@ class AsyncConsumer(AsyncWebsocketConsumer):
             await self.unsubscribe(group)
         if not close_code:
             await self.close()
+
+    async def subscribe_broadcast(self):
+        await self.subscribe('__all__')
+
+    async def subscribe_self(self):
+        user_id = getattr(self.user, 'pk', None) or getattr(self.user, 'id', None) or getattr(self.user, 'key', None) or None
+        if user_id:
+            await self.subscribe(f'user.{user_id}')
 
     async def subscribe(self, group):
         self.groups.add(group)

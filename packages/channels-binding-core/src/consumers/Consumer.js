@@ -44,7 +44,6 @@ class Consumer {
 
     connect() {
         if (this.connected || this.pending) return;
-        this.active = true;
         this.pending = true;
         this.options.debug && this.logWarning('?>', this.url.href)
         this.socket = new REWebSocket({ url: this.url })
@@ -55,7 +54,7 @@ class Consumer {
         this.updateState()
     }
     onError() {
-        this.pending = false;
+        // this.pending = false;
         this.connected = false;
         this.updateState()
     }
