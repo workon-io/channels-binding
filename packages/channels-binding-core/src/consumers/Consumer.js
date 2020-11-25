@@ -1,4 +1,5 @@
 import REWebSocket from './REWebSocket'
+import Cookies from '../utils/Cookies'
 
 class Consumer {
 
@@ -176,6 +177,10 @@ class Consumer {
             this.options.debug && this.logError('<!', data.event, this.options.debug > 0 ? data.error : '')
         }
         else if (data.event) {
+            if (data.event == 'sessionid') {
+                // Special Django auto set the sessionid for path=/ on any sessionid event (see login)
+                Cookies.set('sessionid', data.data)
+            }
             this.options.debug && this.logSuccess('<<', data.event, this.options.debug > 1 ? data.data : '')
             _.has(this.listeners, data.event) &&
                 _.map(this.listeners[data.event], method => method && method(data.data, this))

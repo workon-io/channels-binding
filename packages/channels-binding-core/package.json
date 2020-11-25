@@ -1,6 +1,6 @@
 {
   "name": "@channels-binding/core",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "private": false,
   "keywords": [
     "channels",
@@ -35,7 +35,8 @@
   "license": "MIT",
   "peerDependencies": {
     "lodash": "^4.17.20",
-    "react": "^16.8.0 || 16.14.0"
+    "react": "^16.8.0 || 16.14.0",
+    "universal-cookie": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.1.0",
