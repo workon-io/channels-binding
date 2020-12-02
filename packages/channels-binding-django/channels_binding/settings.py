@@ -5,6 +5,11 @@ from django.utils.module_loading import import_string
 
 # from rest_framework.settings import APISettings
 
+DJANGO_ALLOW_ASYNC_UNSAFE = os.environ.get('DJANGO_ALLOW_ASYNC_UNSAFE')
+if DJANGO_ALLOW_ASYNC_UNSAFE != "true":
+    print('Automatic turns environ DJANGO_ALLOW_ASYNC_UNSAFE variable to "true"')
+    os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
+
 CHANNELS_BINDING = getattr(settings, 'CHANNELS_BINDING', {})
 DEFAULT_CHANNELS_BINDING = {
     "AUTHENTIFICATION_CLASSES": (
