@@ -24,3 +24,4 @@ export { default as useDelete } from './bindings/react/useDelete'
 
 export { default as useDebouncedState } from './utils/useDebouncedState'
 export { default as useDebounced } from './utils/useDebounced'
+export { default as useToggle } from './utils/useToggle'

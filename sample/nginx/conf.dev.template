@@ -1,0 +1,51 @@
+server {
+
+    server_name _;
+    listen      [::]:80 default_server;
+    listen      80 default_server;  
+ 
+    access_log  off;
+    error_log   off;
+ 
+    location ${PUBLIC_PATH} {
+
+        gzip                    on;
+        gzip_min_length         1100;
+        gzip_buffers            4 32k;
+        gzip_types              text/css text/javascript text/xml text/plain text/x-component application/javascript application/x-javascript application/json application/xml application/rss+xml font/truetype application/x-font-ttf font/opentype application/vnd.ms-fontobject image/svg+xml;
+        gzip_vary               on;
+        gzip_comp_level         6;
+        
+        proxy_pass  http://front:8000; # Webpack devServer 
+        http2_push_preload on; 
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade ${DOLLAR}http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host ${DOLLAR}http_host;
+        proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
+        proxy_set_header X-Forwarded-For ${DOLLAR}remote_addr;
+        proxy_set_header X-Forwarded-Port ${DOLLAR}server_port;
+        proxy_set_header X-Request-Start ${DOLLAR}msec;
+
+        proxy_connect_timeout       120s;
+        proxy_send_timeout          120s;
+        proxy_read_timeout          120s;
+        send_timeout                120s;
+
+    }
+
+    location ${PUBLIC_WS_PATH} {
+
+        alias  ${PUBLIC_WS_PATH};
+        proxy_pass http://back:8000; # Daphne (ASGI) 
+        proxy_redirect     off;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade ${DOLLAR}http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header   Host ${DOLLAR}host;
+        proxy_set_header   X-Real-IP ${DOLLAR}remote_addr;
+        proxy_set_header   X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host ${DOLLAR}server_name;
+        
+    }
+}

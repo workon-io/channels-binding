@@ -1,24 +1,9 @@
-from asgiref.sync import async_to_sync
-from channels.db import database_sync_to_async
-from channels.layers import get_channel_layer
-from channels_binding import settings as self_settings
-from channels_binding.utils import bind, db_sync, send, send_sync, sync
+from channels_binding.utils import bind
 from django.forms import ChoiceField, ModelChoiceField, modelform_factory
 
 __all__ = [
     'AsyncFormModelBinding',
 ]
-
-
-@database_sync_to_async
-def async_form_data(bind, data):
-    bind.form = bind.get_form(data)
-    if 'submit' in data:
-        if bind.form_is_valid(bind.form, data):
-            bind.save_form(bind.form, data)
-    form_data = bind.serialize_form(bind.form, data)
-    form_data.update(id=bind.form.instance.pk)
-    return form_data
 
 
 class AsyncFormModelBinding(object):
@@ -28,18 +13,26 @@ class AsyncFormModelBinding(object):
     form_fields = None
 
     @bind('form')
-    async def receive_form(self, data, *args, **kwargs):
-        await self.reflect('form', await async_form_data(self, data), *args, **kwargs)
-        if not self.form.errors and not getattr(self, 'post_save_connect', False) is True:
-            await self.dispatch('retrieve', await self.serialize_retrieve(self.form.instance, data), *args, **kwargs)
+    async def receive_form(self, request):
 
-    async def get_form_fields(self, data):
+        self.form = await self.get_form(request)
+        if 'submit' in request.data:
+            if await self.form_is_valid(request, self.form):
+                await self.save_form(request, self.form)
+        form_data = await self.serialize_form(request, self.form)
+        form_data.update(id=self.form.instance.pk)
+        await request.reflect(form_data)
+
+        # if not self.form.errors and not getattr(self, 'post_save_connect', False) is True:
+        #     await self.dispatch('retrieve', await self.serialize_retrieve(self.form.instance, data), *args, **kwargs)
+
+    async def get_form_fields(self, request):
         if not self.form_fields:
             return [field.name for field in self.model._meta.get_fields() if field.editable] if self.model else []
         else:
             return self.form_fields
 
-    async def get_form_kwargs(self, instance, data):
+    async def get_form_kwargs(self, request, instance):
         # args = [
         #     data.get('submit', None),
         # ]
@@ -48,32 +41,22 @@ class AsyncFormModelBinding(object):
         )
         return kwargs
 
-    async def get_form(self, data, **kwargs):
-        instance = await self.get_object(data, create=kwargs.get('create', True))
-        fields = await self.get_form_fields(data)
-        kwargs = await self.get_form_kwargs(instance, data)
-        # for name in fields:
-        #     if name not in data:
-        #         data[name] = getattr(instance, name, None)
-        if self.model and not self.form_class:
-            form = modelform_factory(self.model, fields=fields)(
-                data.get('submit', None),
-                **kwargs
-            )
-        else:
-            form = self.form_class(
-                data.get('submit', None),
-                **kwargs
-            )
+    async def get_form(self, request, **kwargs):
+        instance = await self.get_object(request, create=kwargs.get('create', True))
+        fields = await self.get_form_fields(request)
+        kwargs = await self.get_form_kwargs(request, instance)
+        data = request.data.get('submit', None)
+        form_class = modelform_factory(self.model, fields=fields) if self.model and not self.form_class else self.form_class
+        form = form_class(data, **kwargs)
         return form
 
-    async def form_is_valid(self, form, data):
+    async def form_is_valid(self, request, form):
         return form.is_valid()
 
-    async def save_form(self, form, data):
+    async def save_form(self, request, form):
         return form.save()
 
-    async def serialize_form(self, form, data):
+    async def serialize_form(self, request, form):
         fields = []
         for field in form:
             type = str(field.field.__class__.__name__)
@@ -93,7 +76,7 @@ class AsyncFormModelBinding(object):
 
         return dict(
             errors=form.errors or None,
-            success=not form.errors if 'submit' in data else None,
-            object=self.serialize_retrieve(form.instance, data),
+            success=not form.errors if 'submit' in request.data else None,
+            object=await self.serialize_retrieve(request, form.instance) if form.instance else None,
             fields=fields
         )

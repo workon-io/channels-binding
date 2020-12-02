@@ -1,0 +1,132 @@
+name: channels-binding.sample
+version: '3.6'
+
+environment:
+    - PORT=${PORT:-8080}
+    - DOCKER_COMPOSE_TIMEOUT=10000
+    - DISABLE_COLLECTSTATIC=1
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - PYTHONBUFFERED=1
+    - STG=/var/storage/channels-binding/sample
+    - PUBLIC_PATH=${PUBLIC_PATH:-/}
+    - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - DOLLAR=$$ # Proxying nginx $ against ENV
+
+# PROXYING EXTERNAL NGINX >
+# location ${PUBLIC_PATH} {
+#     proxy_pass          http://0.0.0.0:${PORT}${PUBLIC_PATH};
+#     proxy_redirect      off;
+#     proxy_http_version  1.1;
+#     proxy_set_header    Upgrade $http_upgrade;
+#     proxy_set_header    Connection "upgrade";
+#     proxy_set_header    Host $host;
+#     proxy_set_header    X-Real-IP $remote_addr;
+#     proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
+#     proxy_set_header    X-Forwarded-Host $server_name;
+# }
+
+commands:
+    init: 
+        - launch -d 
+        - bash echo 'APP is launched on http://0.0.0.0:${PORT}${PUBLIC_PATH}'
+    dev: bash watch -n5 -c de logs -f --tail=300 back
+    manage: exec back python manage.py
+    migrate: manage migrate
+    test: manage test
+    shell: manage shell
+    task: exec back python manage.py task
+    debug: logs -f --tail=300 back
+    nginx_conf: exec nginx cat /etc/nginx/conf.d/default.conf
+    debug_nginx: logs -f --tail=300 nginx
+    debug_front: logs -f --tail=500 front
+    debug_postgres: logs -f --tail=300 postgres
+    enter: exec back bash
+    enter_nginx: exec nginx sh
+    enter_front: exec front sh
+    enter_postgres: run postgres sh
+    psql: exec postgres psql -U postgres
+    flush: exec -T redis redis-cli FLUSHALL
+    nginx: restart nginx
+    yarn: exec front yarn --modules-folder /node_modules/
+    release: yarn run release
+    pip: exec back pip
+
+services:
+
+    nginx:
+        links:
+            - back:back
+            - front:front
+        ports:
+            - '${PORT}:80'
+        volumes:
+            - ./nginx/:/etc/nginx/templates/
+            - ./front:/front
+        restart: always
+        command: /bin/bash -c "envsubst < /etc/nginx/templates/conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+
+
+    back: # asgi only
+        volumes: &back_volumes
+            - ./back:/app
+        links: &back_links
+            - postgres:postgres
+            - redis:redis
+        restart: always
+        command: daphne -b 0.0.0.0 -p 8000 asgi:application
+
+    front: 
+        volumes:
+            - ./front:/app
+            - ./back:/back
+        command: yarn run release
+
+    postgres:
+        image: postgres:12
+        volumes:
+            - /dev/shm:/dev/shm
+            - ${STG}/postgres/:/var/lib/postgresql/data
+        restart: always
+
+    redis:
+        image: redis:6
+        volumes:
+            - ${STG}/redis/:/data
+        restart: always
+
+targets:
+
+    localhost: #dev
+
+        environment:
+            - DEBUG=2
+            - DEV_MODE=1
+
+        commands:
+            optimize: yarn run optimize
+            translate:
+                - manage makemessages --no-wrap -l fr
+                - manage compilemessages -l fr
+                - restart back
+            mm:
+                - manage migrate
+                - manage makemigrations
+                - manage migrate
+                
+        services:
+            nginx:  
+                command: /bin/bash -c "envsubst < /etc/nginx/templates/conf.dev.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+            back:
+                tty: true
+                command: python manage.py runserver 0.0.0.0:8000
+            front: 
+                command: yarn run runserver
+                restart: always
+
+
+    
+    prod: 
+        environment:
+    test:
+        environment:

@@ -1,0 +1,136 @@
+services:
+    back:
+        build: back
+        command: python manage.py runserver 0.0.0.0:8000
+        container_name: channels-binding.sample.localhost.back
+        environment:
+        - DEV_MODE=1
+        - STG=/var/storage/channels-binding/sample
+        - PUBLIC_PATH=${PUBLIC_PATH:-/}
+        - PYTHONBUFFERED=1
+        - DISABLE_COLLECTSTATIC=1
+        - DOCKER_EMPEROR_ENVIRONMENT=DEV_MODE=1 STG=/var/storage/channels-binding/sample
+            PUBLIC_PATH=${PUBLIC_PATH:-/} PYTHONBUFFERED=1 DISABLE_COLLECTSTATIC=1
+            PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/} DOLLAR=$$ DOCKER_EMPEROR_HOSTS=
+            DEBUG=2 POSTGRES_HOST_AUTH_METHOD=trust PORT=${PORT:-8080} DOCKER_COMPOSE_TIMEOUT=10000
+        - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+        - DOLLAR=$$
+        - DOCKER_EMPEROR_HOSTS=
+        - DEBUG=2
+        - POSTGRES_HOST_AUTH_METHOD=trust
+        - PORT=${PORT:-8080}
+        - DOCKER_COMPOSE_TIMEOUT=10000
+        image: channels-binding.sample.back
+        links:
+        - postgres:postgres
+        - redis:redis
+        restart: always
+        tty: true
+        volumes:
+        - ./back:/app
+    front:
+        build: front
+        command: yarn run runserver
+        container_name: channels-binding.sample.localhost.front
+        environment:
+        - DEV_MODE=1
+        - STG=/var/storage/channels-binding/sample
+        - PUBLIC_PATH=${PUBLIC_PATH:-/}
+        - PYTHONBUFFERED=1
+        - DISABLE_COLLECTSTATIC=1
+        - DOCKER_EMPEROR_ENVIRONMENT=DEV_MODE=1 STG=/var/storage/channels-binding/sample
+            PUBLIC_PATH=${PUBLIC_PATH:-/} PYTHONBUFFERED=1 DISABLE_COLLECTSTATIC=1
+            PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/} DOLLAR=$$ DOCKER_EMPEROR_HOSTS=
+            DEBUG=2 POSTGRES_HOST_AUTH_METHOD=trust PORT=${PORT:-8080} DOCKER_COMPOSE_TIMEOUT=10000
+        - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+        - DOLLAR=$$
+        - DOCKER_EMPEROR_HOSTS=
+        - DEBUG=2
+        - POSTGRES_HOST_AUTH_METHOD=trust
+        - PORT=${PORT:-8080}
+        - DOCKER_COMPOSE_TIMEOUT=10000
+        image: channels-binding.sample.front
+        restart: always
+        volumes:
+        - ./front:/app
+        - ./back:/back
+    nginx:
+        command: /bin/bash -c "envsubst < /etc/nginx/templates/conf.dev.template >
+            /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+        container_name: channels-binding.sample.localhost.nginx
+        environment:
+        - DEV_MODE=1
+        - STG=/var/storage/channels-binding/sample
+        - PUBLIC_PATH=${PUBLIC_PATH:-/}
+        - PYTHONBUFFERED=1
+        - DISABLE_COLLECTSTATIC=1
+        - DOCKER_EMPEROR_ENVIRONMENT=DEV_MODE=1 STG=/var/storage/channels-binding/sample
+            PUBLIC_PATH=${PUBLIC_PATH:-/} PYTHONBUFFERED=1 DISABLE_COLLECTSTATIC=1
+            PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/} DOLLAR=$$ DOCKER_EMPEROR_HOSTS=
+            DEBUG=2 POSTGRES_HOST_AUTH_METHOD=trust PORT=${PORT:-8080} DOCKER_COMPOSE_TIMEOUT=10000
+        - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+        - DOLLAR=$$
+        - DOCKER_EMPEROR_HOSTS=
+        - DEBUG=2
+        - POSTGRES_HOST_AUTH_METHOD=trust
+        - PORT=${PORT:-8080}
+        - DOCKER_COMPOSE_TIMEOUT=10000
+        image: nginx
+        links:
+        - back:back
+        - front:front
+        ports:
+        - ${PORT:-8080}:80
+        restart: always
+        volumes:
+        - ./nginx/:/etc/nginx/templates/
+        - ./front:/front
+    postgres:
+        container_name: channels-binding.sample.localhost.postgres
+        environment:
+        - DEV_MODE=1
+        - STG=/var/storage/channels-binding/sample
+        - PUBLIC_PATH=${PUBLIC_PATH:-/}
+        - PYTHONBUFFERED=1
+        - DISABLE_COLLECTSTATIC=1
+        - DOCKER_EMPEROR_ENVIRONMENT=DEV_MODE=1 STG=/var/storage/channels-binding/sample
+            PUBLIC_PATH=${PUBLIC_PATH:-/} PYTHONBUFFERED=1 DISABLE_COLLECTSTATIC=1
+            PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/} DOLLAR=$$ DOCKER_EMPEROR_HOSTS=
+            DEBUG=2 POSTGRES_HOST_AUTH_METHOD=trust PORT=${PORT:-8080} DOCKER_COMPOSE_TIMEOUT=10000
+        - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+        - DOLLAR=$$
+        - DOCKER_EMPEROR_HOSTS=
+        - DEBUG=2
+        - POSTGRES_HOST_AUTH_METHOD=trust
+        - PORT=${PORT:-8080}
+        - DOCKER_COMPOSE_TIMEOUT=10000
+        image: postgres:12
+        restart: always
+        volumes:
+        - /dev/shm:/dev/shm
+        - /var/storage/channels-binding/sample/postgres/:/var/lib/postgresql/data
+    redis:
+        container_name: channels-binding.sample.localhost.redis
+        environment:
+        - DEV_MODE=1
+        - STG=/var/storage/channels-binding/sample
+        - PUBLIC_PATH=${PUBLIC_PATH:-/}
+        - PYTHONBUFFERED=1
+        - DISABLE_COLLECTSTATIC=1
+        - DOCKER_EMPEROR_ENVIRONMENT=DEV_MODE=1 STG=/var/storage/channels-binding/sample
+            PUBLIC_PATH=${PUBLIC_PATH:-/} PYTHONBUFFERED=1 DISABLE_COLLECTSTATIC=1
+            PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/} DOLLAR=$$ DOCKER_EMPEROR_HOSTS=
+            DEBUG=2 POSTGRES_HOST_AUTH_METHOD=trust PORT=${PORT:-8080} DOCKER_COMPOSE_TIMEOUT=10000
+        - PUBLIC_WS_PATH=${PUBLIC_WS_PATH:-/ws/}
+        - DOLLAR=$$
+        - DOCKER_EMPEROR_HOSTS=
+        - DEBUG=2
+        - POSTGRES_HOST_AUTH_METHOD=trust
+        - PORT=${PORT:-8080}
+        - DOCKER_COMPOSE_TIMEOUT=10000
+        image: redis:6
+        restart: always
+        volumes:
+        - /var/storage/channels-binding/sample/redis/:/data
+version: '3.6'
+volumes: {}
