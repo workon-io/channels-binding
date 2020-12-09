@@ -12,7 +12,7 @@ class AsyncModelBinding(object):
     data_pk = 'id'
     page_size = 25
 
-    async def get_queryset(self, data):
+    async def get_queryset(self, request):
         if not self.queryset:
             if self.model:
                 return self.model.objects.all()

@@ -128,7 +128,8 @@ if __name__ == "__main__":
             try:
                 print(subprocess.check_output(
                     ["rm", "-rf", "dist/*"], cwd=cwd))
-            except BaseException:  # No previous dist
+            except BaseException as e:  # No previous dist
+                print(e)
                 pass
             print(subprocess.check_output(
                 ["python3", "setup.py", "sdist", "bdist_wheel"], cwd=cwd))
