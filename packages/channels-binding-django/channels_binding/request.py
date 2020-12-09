@@ -24,6 +24,7 @@ class AsyncRequest:
         self.data = payload.get('data', {})
         event_uid = self.event.split('#', 1)
         self.pure_event = event_uid[0].strip()
+        self.action = self.pure_event.rsplit('.', 1)[-1]
         self.uid = event_uid[-1].strip() if len(event_uid) == 2 else None
         self.today = datetime.date.today()
         if not isinstance(self.data, (list, dict)):
@@ -46,15 +47,20 @@ class AsyncRequest:
         try:
             events = registered_binding_events.get(self.pure_event, [])
             counter = 0
-            for binding_class, method_name, name in events:
+            for binding_class, method_name, action in events:
                 binding = self.consumer.bindings_by_class.get(binding_class, None)
                 if binding:
-                    await self.consumer.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
-                    method = getattr(binding, method_name)
-                    outdata = await method(self)
-                    if outdata:
-                        await self.reflect(outdata)
                     counter += 1
+                    if await binding.has_permission(self):
+                        await self.consumer.subscribe(binding.stream)  # TODO: auto unsubscribe or get subscribe from front
+                        method = getattr(binding, method_name)
+                        outdata = await method(self)
+                        if outdata:
+                            await self.reflect(outdata)
+                    else:
+                        message = await encode_json({'event': self.event, 'error': 'No permision for {}'.format(self.event)})
+                        await self.consumer.send(text_data=message)
+
             if not counter:
                 logger.warning('No binding found for {}'.format(self.event))
                 message = await encode_json({'event': self.event, 'error': 'No binding found for {}'.format(self.event)})

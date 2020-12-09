@@ -1,7 +1,6 @@
 import { registry } from '../../consumers/registerConsumer'
 import React from 'react'
 
-
 const useBind = (props, options = {}) => {
 
     _.isString(props) && (props = {
@@ -11,12 +10,14 @@ const useBind = (props, options = {}) => {
 
     const {
         action,
-        data: defaultData,
+        data: defaultData = {},
         params = {},
         passive = false,
+        versatile = false,
         intercept = null,
         observe = null,
-        delay = null
+        delay = null,
+        triggers = []
     } = props
     let {
         event,
@@ -103,6 +104,10 @@ const useBind = (props, options = {}) => {
         }
         return disposer
     }, listen)
+
+    versatile && React.useEffect(() => defaultData && setState({ ...state, data: defaultData || {} }), [defaultData])
+
+
 
     return {
         stream,

@@ -6,12 +6,14 @@ export { default as registerConsumer } from './consumers/registerConsumer'
 export { default as Bind } from './bindings/react/Bind'
 export { default as useBind } from './bindings/react/useBind'
 export { default as usePassiveBind } from './bindings/react/usePassiveBind'
+export { default as useAutoBind } from './bindings/react/useAutoBind'
 
 export { default as Search } from './bindings/react/Search'
 export { default as useSearch } from './bindings/react/useSearch'
 
 export { default as Retrieve } from './bindings/react/Retrieve'
 export { default as useRetrieve } from './bindings/react/useRetrieve'
+export { default as useInstance } from './bindings/react/useInstance'
 
 export { default as Form } from './bindings/react/Form'
 export { default as useForm } from './bindings/react/useForm'

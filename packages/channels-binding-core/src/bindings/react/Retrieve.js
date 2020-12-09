@@ -4,16 +4,17 @@ import useDelete from './useDelete'
 
 const Retrieve = ({
     deletable,
+    children,
     ...props
 }) => {
 
     const { stream, data, pk } = props
     if (deletable) {
         const { deleted } = useDelete({ stream, data, pk })
-        return deleted ? null : children(useRetrieve(props))
+        return deleted ? null : (children ? children(useRetrieve(props)) : null)
     }
     else {
-        return children(useRetrieve(props))
+        return children ? children(useRetrieve(props)) : null
     }
 }
 

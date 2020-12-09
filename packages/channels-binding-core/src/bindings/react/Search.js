@@ -1,5 +1,5 @@
 import useSearch from './useSearch'
 
-const Search = ({ children, ...props }) => children(useSearch(props))
+const Search = ({ children, ...props }) => children ? children(useSearch(props)) : null
 
 export default Search
