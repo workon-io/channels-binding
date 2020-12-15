@@ -27,25 +27,25 @@ class AsyncSearchModelBinding(object):
         limit = request.data.get('limit', None)
         if not isinstance(limit, (str, int)):
             limit = None
-        queryset = await self.paginate(request, queryset, page, limit)
-        search_data = await self.serialize_search(request, queryset)
+        pagined = await self.paginate(request, queryset, page, limit)
+        search_data = await self.serialize_search(request, pagined)
 
         await request.reflect(search_data)
 
-    async def serialize_search(self, request, queryset):
+    async def serialize_search(self, request, pagined):
         rows = []
-        for instance in queryset:
+        for instance in pagined:
             row = await self.serialize_search_row(request, instance)
             if 'id' not in row:
                 row['id'] = instance.pk
             rows.append(row)
         return dict(
-            page=queryset.number,
-            limit=queryset.paginator.per_page,
-            count=queryset.paginator.count,
+            page=pagined.number,
+            limit=pagined.paginator.per_page,
+            count=pagined.paginator.count,
             order=request.data.get('order', None),
             rows=rows
-        ) if hasattr(queryset, 'paginator') else dict(
+        ) if hasattr(pagined, 'paginator') else dict(
             page=1,
             limit=len(rows),
             count=len(rows),

@@ -10,14 +10,17 @@ const useInstance = (props, options = {}) => {
 
     const [deleted, setDeleted] = React.useState(false)
     const retrieve = useAutoBind({
-        ...props
+        ...props,
+        action: 'retrieve'
     })
 
     usePassiveBind({ stream: retrieve.stream, action: 'updated', intercept: retrieve.dispatch })
+    const remove = usePassiveBind({ stream: retrieve.stream, action: 'delete' })
     usePassiveBind({ stream: retrieve.stream, action: 'deleted', intercept: data => setDeleted(true) })
 
     return {
         deleted,
+        remove: remove.dispatch,
         ...retrieve,
     }
 }
