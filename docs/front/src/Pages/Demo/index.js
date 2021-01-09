@@ -1,6 +1,5 @@
 import { RouterTabs } from 'libs';
 import Box from '@material-ui/core/Box';
-import Code from 'src/Code'
 
 
 const basePath = `${PUBLIC_PATH}demo/`
@@ -28,7 +27,7 @@ const Routes = props => {
                 <Code
                     title='Simple Reflection'
                     description='Illustrates how channels-binding handles request with simple reflected response'
-                    js='Pages/Demo/SimpleReflection'
+                    js='Pages/Demo/Codes/SimpleReflection'
                     py='bindings/simple_reflexion'
                 />
             </Route>
@@ -36,7 +35,7 @@ const Routes = props => {
                 <Code
                     title='Asyncio Loop'
                     description='Illustrates how asyncio can be used to create a short interaction loop '
-                    js='Pages/Demo/AsyncioLoop'
+                    js='Pages/Demo/Codes/AsyncioLoop'
                     py='bindings/asyncio_loop'
                 />
             </Route>
@@ -44,7 +43,7 @@ const Routes = props => {
                 <Code
                     title='High Frequency Realtime Data'
                     description=''
-                    js='Pages/Demo/HighFrequencyRealtimeData'
+                    js='Pages/Demo/Codes/HighFrequencyRealtimeData'
                     py='tasks/high_frequency_realtime_data'
                 />
             </Route>

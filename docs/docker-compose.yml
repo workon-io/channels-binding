@@ -1,6 +1,6 @@
 services:
     back:
-        build: ./docs/back
+        build: ./back
         command: python manage.py runserver 0.0.0.0:8000
         container_name: channels-binding.docs.localhost.back
         environment:
@@ -26,10 +26,10 @@ services:
         restart: always
         tty: true
         volumes:
-        - ./packages/channels-binding-django/channels_binding:/usr/local/lib/python3.9/site-packages/channels_binding
-        - ./docs/back:/app
+        - ./back:/app
+        - ./../packages/channels-binding-django/channels_binding:/usr/local/lib/python3.9/site-packages/channels_binding
     front:
-        build: ./docs/front
+        build: ./front
         command: yarn run runserver
         container_name: channels-binding.docs.localhost.front
         environment:
@@ -51,9 +51,9 @@ services:
         - DOCKER_COMPOSE_TIMEOUT=10000
         restart: always
         volumes:
-        - ./packages/channels-binding-core/src:/tmp/channels-binding-core
-        - ./docs/front:/app
-        - ./docs/back:/back
+        - ./back:/back
+        - ./../packages/channels-binding-core/src:/tmp/channels-binding-core
+        - ./front:/app
     nginx:
         command: /bin/bash -c "envsubst < /etc/nginx/templates/conf.dev.template >
             /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
@@ -83,8 +83,8 @@ services:
         - ${PORT:-8111}:80
         restart: always
         volumes:
-        - ./docs/nginx/:/etc/nginx/templates/
-        - ./docs/front:/front
+        - ./nginx/:/etc/nginx/templates/
+        - ./front:/front
         - /var/storage/channels-binding/docs/static:/stg/static:ro
         - /var/storage/channels-binding/docs/media:/stg/media:ro
     postgres:
@@ -135,7 +135,7 @@ services:
         volumes:
         - /var/storage/channels-binding/docs/redis/:/data
     worker:
-        build: ./docs/back
+        build: ./back
         command: watchmedo auto-restart -R -p '*.py' -- ./worker.sh
         container_name: channels-binding.docs.localhost.worker
         environment:
@@ -159,6 +159,6 @@ services:
         restart: always
         tty: true
         volumes:
-        - ./docs/back:/app
+        - ./back:/app
 version: '3.6'
 volumes: {}

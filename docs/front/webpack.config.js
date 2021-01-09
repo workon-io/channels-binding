@@ -49,6 +49,9 @@ module.exports = env => {
         Chart: ['react-apexcharts', 'default'],
         Link: ['react-router-dom', 'Link'],
         Route: ['react-router-dom', 'Route'],
+        Bind: ['@channels-binding/core', 'Bind'],
+        Retrieve: ['@channels-binding/core', 'Retrieve'],
+        Search: ['@channels-binding/core', 'Search'],
 
         // Uses
         useBind: ['@channels-binding/core', 'useBind'],
@@ -61,10 +64,9 @@ module.exports = env => {
         useHistory: ['react-router-dom', 'useHistory'],
         useDebouncedState: ['@channels-binding/core', 'useDebouncedState'],
 
-        // Views
-        Bind: ['@channels-binding/core', 'Bind'],
-        Retrieve: ['@channels-binding/core', 'Retrieve'],
-        Search: ['@channels-binding/core', 'Search'],
+        // Local
+
+        Code: ['libs/Code', 'default'],
 
 
         process: 'process/browser',
@@ -99,7 +101,8 @@ module.exports = env => {
             new webpack.DefinePlugin(DEFINES),
             new CleanWebpackPlugin(),
             new HtmlWebPackPlugin({
-                template: path.join(__dirname, 'src/index.html'),
+                template: resolve('src/index.html'),
+                favicon: resolve("src/Icon.svg"),
                 filename: 'index.html',
                 // inject: false
             }),

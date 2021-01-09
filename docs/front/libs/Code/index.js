@@ -35,10 +35,10 @@ export default ({ title, description, js, py }) => {
         </Card>
         <Grid container spacing={2}>
             <Grid item sm={6}>
-                <DjangoCodeBloc code={py} />
+                <ReactCodeBloc code={js} />
             </Grid>
             <Grid item sm={6}>
-                <ReactCodeBloc code={js} />
+                <DjangoCodeBloc code={py} />
             </Grid>
         </Grid>
     </>
@@ -54,7 +54,6 @@ const DjangoCodeBloc = ({ code }) => {
             raw: require(`!!raw-loader!back/${code.name}.py?raw`).default
         }
     })
-    console.log(codes)
 
     const classes = useStyles()
     return <Card className={classes.card}>

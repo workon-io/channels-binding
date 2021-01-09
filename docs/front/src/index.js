@@ -6,10 +6,6 @@ import { BrowserRouter } from "react-router-dom";
 import { ScrollToTop } from 'libs'
 import theme from './theme'
 import Layout from './Layout';
-import Home from './Pages/Home'
-import GettingStarted from './Pages/GettingStarted'
-import API from './Pages/API'
-import Demo from './Pages/Demo'
 import './index.css';
 
 moment.locale('fr');
@@ -30,11 +26,12 @@ ReactDOM.render(<BrowserRouter>
     <ScrollToTop />
     <CssBaseline />
     <ThemeProvider theme={theme}>
-        <Layout>
-            <Home.Routes />
-            <GettingStarted.Routes />
-            <Demo.Routes />
-            <API.Routes />
+        <Layout tabs={[
+            { label: 'Home', to: require('src/Pages/Home') },
+            { label: 'Getting Started', to: require('src/Pages/GettingStarted') },
+            { label: 'Demo', to: require('src/Pages/Demo') },
+            { label: 'API', to: require('src/Pages/API') },
+        ]}>
         </Layout>
     </ThemeProvider>
 </BrowserRouter>, document.getElementById('root'));

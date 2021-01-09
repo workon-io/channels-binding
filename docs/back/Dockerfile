@@ -1,4 +1,4 @@
-FROM python:3.9.0-buster
+FROM python:3.9.1-buster
 
 LABEL "name"="channels-binding"
 LABEL "version"="1.0"
@@ -27,17 +27,17 @@ RUN set -xe \
 # HEAVY INSTALLS
 RUN set -xe \
     && packages=' \
-    cffi==1.14.0 \
+    cffi==1.14.4 \
     psycopg2==2.8.6 \
-    requests==2.24.0 \
+    requests==2.25.1 \
     PyYAML==5.3.1 \
-    watchdog==0.10.3 \
+    watchdog==1.0.2 \
     argh==0.26.2 \
-    asgiref==3.2.10 \
-    Pillow==7.1.1 \
-    daphne==2.5.0 \
+    asgiref==3.3.1 \
+    Pillow==8.1.0 \
+    daphne==3.0.1 \
     dpath==2.0.1 \
-    celery==5.0.2 \
+    celery==5.0.5 \
     premailer==3.7.0 \
     hiredis==1.1.0 \
     eventlet==0.29.1 \
@@ -50,12 +50,12 @@ RUN set -xe \
 # DJANGO INSTALLS
 RUN set -xe \
     && packages=' \
-    django==3.1.2 \
+    django==3.1.5 \
     django-redis==4.12.1 \
     django-cors-headers==3.2.0 \
-    channels==2.4.0 \
+    channels==3.0.3 \
     channels-redis==3.2.0 \
-    channels-binding==1.8.8 \
+    channels-binding==1.9.7 \
     ' \
     && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir $packages 
 

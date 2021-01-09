@@ -59,8 +59,6 @@ app.conf.timezone = 'UTC'
 
 
 task = app.task
-# def task(wrapped):
-#     return app.task(wrapped)
 
 
 def async_task(async_def):

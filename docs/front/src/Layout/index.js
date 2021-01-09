@@ -7,12 +7,12 @@ import CardHeader from '@material-ui/core/CardHeader';
 import NavBar from './NavBar'
 import BottomNav from './BottomNav'
 
-export default props => {
+export default ({ tabs, children }) => {
 
     const classes = useStyles()
 
     return <div className={classes.root}>
-        <NavBar />
+        <NavBar tabs={tabs} />
 
         <Card className={classes.card}>
             {/* <CardHeader
@@ -22,7 +22,7 @@ export default props => {
                 action={<Link component={'img'} src={wabtecImage} height={70} />}
                 title={<img src={regionImage} />}
             /> */}
-            <CardHeader
+            {/* <CardHeader
                 className={classes.title}
 
                 title={'Channels Binding'}
@@ -33,9 +33,12 @@ export default props => {
                         <br />
                         - Think only fonctionnal, forget abstract layers
                     </>}
-            />
+            /> */}
             <CardContent>
-                {props.children}
+                {_.map(tabs, ({ to }) => {
+                    <to.Routes />
+                })}
+                {children}
                 <BottomNav />
             </CardContent>
         </Card>
@@ -57,6 +60,7 @@ const useStyles = makeStyles(theme => ({
         background: 'white !important',
     },
     card: {
+        marginTop: 70,
         borderRadius: 0,
         '& > .MuiCardContent-root': {
             background: 'white'

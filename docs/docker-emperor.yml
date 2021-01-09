@@ -5,7 +5,6 @@ environment:
     - PORT=${PORT:-8111}
     - DOCKER_COMPOSE_TIMEOUT=10000
     - DISABLE_COLLECTSTATIC=1
-    - POSTGRES_HOST_AUTH_METHOD=trust
     - PYTHONBUFFERED=1
     - STG=/var/storage/channels-binding/docs
     - PUBLIC_PATH=${PUBLIC_PATH:-/}
@@ -42,6 +41,7 @@ commands:
     debug_front: logs -f --tail=500 front
     debug_worker: logs -f --tail=300 worker
     debug_postgres: logs -f --tail=300 postgres
+    debug_scheduler: logs -f --tail=300 scheduler
     enter: exec back bash
     enter_nginx: exec nginx sh
     enter_front: exec front sh
@@ -63,8 +63,8 @@ services:
         ports:
             - '${PORT}:80'
         volumes:
-            - ./docs/nginx/:/etc/nginx/templates/
-            - ./docs/front:/front
+            - ./nginx/:/etc/nginx/templates/
+            - ./front:/front
             - ${STG}/static:/stg/static:ro
             - ${STG}/media:/stg/media:ro
         restart: always
@@ -72,9 +72,9 @@ services:
 
 
     back: # asgi only
-        build: ./docs/back
+        build: ./back
         volumes: &back_volumes
-            - ./docs/back:/app
+            - ./back:/app
         links: &back_links
             - postgres:postgres
             - redis:redis
@@ -82,14 +82,14 @@ services:
         command: daphne -b 0.0.0.0 -p 8000 asgi:application
 
     front: 
-        build: ./docs/front
+        build: ./front
         volumes:
-            - ./docs/front:/app
-            - ./docs/back:/back
+            - ./front:/app
+            - ./back:/back
         command: yarn run release
 
     worker:
-        build: ./docs/back
+        build: ./back
         volumes: *back_volumes
         links: *back_links
         restart: always
@@ -132,21 +132,21 @@ targets:
                 command: /bin/bash -c "envsubst < /etc/nginx/templates/conf.dev.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
             back:
                 volumes:
-                    - ./packages/channels-binding-django/channels_binding:/usr/local/lib/python3.9/site-packages/channels_binding # VERY TEMP
+                    - ./../packages/channels-binding-django/channels_binding:/usr/local/lib/python3.9/site-packages/channels_binding # VERY TEMP
                 tty: true
                 command: python manage.py runserver 0.0.0.0:8000
             front: 
                 volumes:
-                    - ./packages/channels-binding-core/src:/tmp/channels-binding-core # VERY TEMP
+                    - ./../packages/channels-binding-core/src:/tmp/channels-binding-core # VERY TEMP
                 command: yarn run runserver
                 restart: always
             worker:
                 tty: true
                 command: watchmedo auto-restart -R -p '*.py' -- ./worker.sh
-
-
     
     prod: 
         environment:
+            - HOST=channels-binding.com
     test:
         environment:
+            - HOST=test.channels-binding.com

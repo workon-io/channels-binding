@@ -12,11 +12,11 @@ PUBLIC_WS_PATH = os.environ.get('PUBLIC_WS_PATH').strip('/')
 
 application = ProtocolTypeRouter({
     # (http->django views is added by default)
-    'websocket': SessionMiddlewareStack(AuthMiddlewareStack(
+    'websocket': AuthMiddlewareStack(
         URLRouter([
-            re_path(rf'^{PUBLIC_WS_PATH}/?$', AsyncConsumer, name="root"),
+            re_path(rf'^{PUBLIC_WS_PATH}/?$', AsyncConsumer.as_asgi(), name="root"),
         ])
-    ))
+    )
 })
 
 urlpatterns = [

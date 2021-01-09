@@ -5,8 +5,51 @@ import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import InputBase from '@material-ui/core/InputBase';
 import { alpha } from '@material-ui/core/styles';
-import MenuIcon from '@material-ui/icons/Menu';
+import LogoIcon from './LogoIcon';
 import SearchIcon from '@material-ui/icons/Search';
+
+
+export default ({ tabs }) => {
+    const classes = useStyles();
+
+    return (
+        <div className={classes.root}>
+            <AppBar position="fixed">
+                <Toolbar>
+                    <IconButton
+                        edge="start"
+                        className={classes.menuButton}
+                        color="inherit"
+                        aria-label="open drawer"
+                    >
+                        <LogoIcon />
+                    </IconButton>
+                    <Typography className={classes.title} variant="h6" noWrap>
+                        Channels Binding
+                    </Typography>
+                    <RouterTabs
+                        routes={_.map(tabs, tab => ({ ...tab, to: tab.to.link('root') }))}
+                        noelevation
+                        dark
+                    />
+                    <div className={classes.search}>
+                        <div className={classes.searchIcon}>
+                            <SearchIcon />
+                        </div>
+                        <InputBase
+                            placeholder="Search…"
+                            classes={{
+                                root: classes.inputRoot,
+                                input: classes.inputInput,
+                            }}
+                            inputProps={{ 'aria-label': 'search' }}
+                        />
+                    </div>
+                </Toolbar>
+            </AppBar>
+        </div>
+    );
+}
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -62,50 +105,3 @@ const useStyles = makeStyles((theme) => ({
         },
     },
 }));
-
-export default function SearchAppBar() {
-    const classes = useStyles();
-
-    return (
-        <div className={classes.root}>
-            <AppBar position="fixed">
-                <Toolbar>
-                    <IconButton
-                        edge="start"
-                        className={classes.menuButton}
-                        color="inherit"
-                        aria-label="open drawer"
-                    >
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography className={classes.title} variant="h6" noWrap>
-                        Channels Binding
-                    </Typography>
-                    <RouterTabs
-                        routes={[
-                            { label: 'Home', to: require('src/Pages/Home').link('root') },
-                            { label: 'Getting Started', to: require('src/Pages/GettingStarted').link('root') },
-                            { label: 'Demo', to: require('src/Pages/Demo').link('root') },
-                            { label: 'API', to: require('src/Pages/API').link('root') },
-                        ]}
-                        noelevation
-                        dark
-                    />
-                    <div className={classes.search}>
-                        <div className={classes.searchIcon}>
-                            <SearchIcon />
-                        </div>
-                        <InputBase
-                            placeholder="Search…"
-                            classes={{
-                                root: classes.inputRoot,
-                                input: classes.inputInput,
-                            }}
-                            inputProps={{ 'aria-label': 'search' }}
-                        />
-                    </div>
-                </Toolbar>
-            </AppBar>
-        </div>
-    );
-}

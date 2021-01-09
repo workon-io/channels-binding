@@ -14,9 +14,9 @@ const useInstance = (props, options = {}) => {
         action: 'retrieve'
     })
 
-    usePassiveBind({ stream: retrieve.stream, action: 'updated', intercept: retrieve.dispatch })
+    //usePassiveBind({ stream: retrieve.stream, action: 'updated', intercept: retrieve.dispatch })
     const remove = usePassiveBind({ stream: retrieve.stream, action: 'delete' })
-    usePassiveBind({ stream: retrieve.stream, action: 'deleted', intercept: data => setDeleted(true) })
+    //usePassiveBind({ stream: retrieve.stream, action: 'deleted', intercept: data => setDeleted(true) })
 
     return {
         deleted,

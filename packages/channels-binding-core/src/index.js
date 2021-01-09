@@ -1,3 +1,9 @@
+/*!
+ * channels-binding
+ * Copyright(c) 2020-2021 Autrusseau Damien
+ * MIT Licensed
+ */
+
 export { default as useConsumer } from './consumers/useConsumer'
 export { default as registerConsumer } from './consumers/registerConsumer'
 
