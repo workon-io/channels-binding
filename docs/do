@@ -1,0 +1,125 @@
+#!/bin/bash
+
+declare -A TARGETS=(
+    [prod]="root@www.channels-binding.com:/home/channels-binding/"
+    [test]="root@test.channels-binding.com:/home/channels-binding/"
+)
+
+LOCAL_COMMANDS=(deploy release loadsbackup)
+
+init() { compose down --remove-orphans && compose up $@; }
+debug() { compose logs -f --tail=3 $@; }
+enter() { compose exec front bash $@; }
+manage() { compose exec back python manage.py $@; }
+shell() { manage shell $@; }
+task() { manage task $@; }
+nginx_conf() { compose run nginx /bin/bash -c "envsubst < /etc/nginx/envs/dev/nginx.conf > /etc/nginx/conf.d/default.conf && cat /etc/nginx/conf.d/default.conf"; }
+release() { compose run front yarn release; }
+psql() { compose exec postgres psql -U postgres; }
+pg() { compose exec postgres $@; }
+yarn() { compose exec front yarn --modules-folder /node_modules/ $@; }
+pip() {
+    compose exec back pip $@
+    compose exec worker pip $@
+}
+compose() { command docker-compose $COMPOSE $@; }
+backup() {
+    compose exec postgres pg_dump -Upostgres >backup.sql
+}
+loadsbackup() {
+    psql -c "drop schema public cascade; create schema public;"
+    compose exec -T postgres psql -Upostgres <backup.sql
+}
+prune() {
+    docker system prune --volumes --force
+    docker network prune --force
+    docker image prune --force
+    docker container prune --force
+    docker builder prune --force
+    # docker rmi $(docker images -q)
+}
+deploy() {
+    if [[ $SSH_TARGET && ! $DO_SELF_TARGETED ]]; then
+        log_sync $LOCATION
+        rsync -avz \
+            --exclude "__pycache__/" \
+            --exclude "dist/" \
+            --exclude "backup.sql" \
+            --delete \
+            --rsync-path="mkdir -p $WORK_DIR && rsync" \
+            ./* $LOCATION
+    fi
+    compose build
+    init -d
+    manage migrate --no-input -v 1
+    release
+}
+
+command() {
+    if [[ ${DOCKER_COMMADNDS[*]} =~ (^|[[:space:]])"$1"($|[[:space:]]) ]]; then
+        compose $@
+    else
+        if [[ $SSH_TARGET && ! $DO_SELF_TARGETED && ! ${LOCAL_COMMANDS[*]} =~ (^|[[:space:]])"$1"($|[[:space:]]) ]]; then
+            if [[ ! $DO_SYNCED ]]; then
+                rsync -avz --quiet --rsync-path="mkdir -p $WORK_DIR && rsync" "./$(basename $0)" $LOCATION
+                DO_SYNCED="true"
+            fi
+            ssh $SSH_TARGET -tt "cd $WORK_DIR; ./$(basename $0) $@ @$TARGET --do-self-targeted"
+        else
+            log_exec $@
+            $@
+        fi
+    fi
+}
+
+log_info() { colorized_echo INFO 253 $@; }
+log_debug() { colorized_echo INFO 171 $@; }
+log_exec() { colorized_echo EXEC 39 $@; }
+log_sync() { colorized_echo SYNC 147 $@; }
+log_success() { colorized_echo SUCC 83 $@; }
+log_warning() { colorized_echo WARN 215 $@; }
+log_error() { colorized_echo ERROR 205 $@; }
+colorized_echo() {
+    local label="$1"
+    local color="$2m"
+    shift && shift
+    local remote=""
+    if [[ $DO_SELF_TARGETED ]]; then
+        remote=": $SSH_TARGET"
+    fi
+    local target="\e[1m\e[38;5;208m\e[48;5;256m[ $TARGET$remote ]\e[0m "
+    local label="\e[1m\e[38;5;231m\e[48;5;256m[ DO $label ]\e[0m "
+    local value="\e[1m\e[48;5;256m\e[38;5;$color$@\e[0m "
+    echo -e "\e[0m$target$label$value\e[0m"
+}
+
+DOCKER_COMMADNDS=(build config create down events exec help images kill logs pause port ps pull push restart rm run scale start stop top unpause up)
+TARGET='dev'
+COMPOSE=" -f docker-compose.yml "
+LOCATION=''
+WORK_DIR=''
+SSH_TARGET=''
+DO_SELF_TARGETED=''
+DO_SYNCED=''
+for ((i = 1; i <= "$#"; i++)); do #ITERATE OVER ALL ARGUMENTS
+    if [[ ${!i} == @* ]]; then
+        testedTarget=$(echo ${!i} | cut -c2-)
+        if [[ ${TARGETS[$testedTarget]+_} ]]; then # DETECT THE TARGET IS DEFINED
+            TARGET="$testedTarget"
+            params=($*) && unset params[${i}-1] && set -- "${params[@]}" # REMOVE ARGUMENT FROM STACK
+        fi
+    fi
+done
+if [[ $TARGET ]]; then
+    LOCATION="${TARGETS[$TARGET]}"
+    COMPOSE=" --env-file=envs/$TARGET/.env -f docker-compose.yml -f envs/$TARGET/docker-compose.yml "
+    WORK_DIR=$(echo $LOCATION | cut -d ':' -f2)
+    SSH_TARGET=$(echo $LOCATION | cut -d ':' -f1)
+    for ((i = 1; i <= "$#"; i++)); do                  #ITERATE OVER ALL ARGUMENTS
+        if [[ "${!i}" == "--do-self-targeted" ]]; then # DETECT THE DO INSTANCE IS ALREADY RUNNING ON TARGET
+            DO_SELF_TARGETED="$TARGET"
+            params=($*) && unset params[${i}-1] && set -- "${params[@]}" # REMOVE ARGUMENT FROM STACK
+        fi
+    done
+fi
+command $@

@@ -50,42 +50,13 @@ const theme = createMuiTheme({
         // ].join(',')
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
     },
-    overrides: {
-        MuiInputLabel: {
-            shrink: {
-                transform: 'translate(0, 10.5px) scale(0.75)'
-            }
-        },
-        MuiButton: {
-            root: {
-                // color: custom('contrastText'),
-                // backgroundColor: custom('main'),
-                // "&:hover": {
-                //     backgroundColor: custom('dark')
-                // }
-            }
-        },
-        MuiChip: {
-            root: {
-                // color: custom('contrastText'),
-                // backgroundColor: custom('main'),
-                // "&:hover": {
-                //     backgroundColor: custom('dark')
-                // }
-            }
-        },
-        MuiAvatar: {
-            root: {
-                // backgroundColor: custom('light'),
-            }
-        },
-        // MuiPaginationItem: {
-        //     root: {
-        //         background: 'white',
-        //         color: 'white'
-        //     }
-        // }
-    }
+    // overrides: {
+    //     // MuiInputLabel: {
+    //     //     shrink: {
+    //     //         transform: 'translate(0, 10.5px) scale(0.75)'
+    //     //     }
+    //     // },
+    // }
     // typography: {
     //     // Use the system font instead of the default Roboto font.
     //     fontFamily: [

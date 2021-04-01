@@ -16,7 +16,7 @@ class AsyncSignalsModelBinding(object):
 
     async def _post_save(cls, instance):
         binding = cls._lazy
-        await send(f'''updated#{getattr(instance, cls.data_pk, "pk") or "pk"}''', True, stream=binding.stream, group=binding.stream)
+        await send(f'''updated#{getattr(instance, cls.data_pk, instance.pk) or instance.pk}''', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def post_save(cls, sender, instance, created, *args, **kwargs):
@@ -28,7 +28,7 @@ class AsyncSignalsModelBinding(object):
     async def _m2m_changed(cls, instance, action):
         if action.startswith('post'):
             binding = cls._lazy
-            await send(f'updated#{getattr(instance, cls.data_pk, "pk") or "pk"}', True, stream=binding.stream, group=binding.stream)
+            await send(f'updated#{getattr(instance, cls.data_pk, instance.pk) or instance.pk}', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def m2m_changed(cls, sender, instance, action, reverse, model, pk_set, *args, **kwargs):
@@ -39,7 +39,7 @@ class AsyncSignalsModelBinding(object):
 
     async def _post_delete(cls, instance):
         binding = cls._lazy
-        await send(f'deleted#{getattr(instance, cls.data_pk, "pk") or "pk"}', True, stream=binding.stream, group=binding.stream)
+        await send(f'deleted#{getattr(instance, cls.data_pk, instance.pk) or instance.pk}', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def post_delete(cls, sender, instance, *args, **kwargs):

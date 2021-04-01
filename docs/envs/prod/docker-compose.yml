@@ -1,0 +1,5 @@
+version: '3.6'
+services:
+    nginx:  
+        command: /bin/bash -c "envsubst < /etc/nginx/envs/prod/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+  

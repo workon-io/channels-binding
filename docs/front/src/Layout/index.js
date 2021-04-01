@@ -35,9 +35,7 @@ export default ({ tabs, children }) => {
                     </>}
             /> */}
             <CardContent>
-                {_.map(tabs, ({ to }) => {
-                    <to.Routes />
-                })}
+                {_.map(tabs, ({ to }) => <to.Routes />)}
                 {children}
                 <BottomNav />
             </CardContent>

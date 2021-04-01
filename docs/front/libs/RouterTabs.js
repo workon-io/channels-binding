@@ -20,7 +20,7 @@ const RouterTabs = ({
     const history = useHistory()
     const classes = useStyles();
     const [index, setIndex] = React.useState(0)
-    const routes = _.filter(defaultRoutes, r => r)
+    const routes = defaultRoutes //_.filter(defaultRoutes, r => r)
 
     React.useEffect(() => {
         let index = 0
@@ -50,6 +50,9 @@ const RouterTabs = ({
         >
             {_.map(routes, (route, index) => {
                 return <Tab
+                    classes={{
+                        root: classes.tab
+                    }}
                     style={{ minWidth: 0 }}
                     key={key(route)}
                     onClick={handleRowClick(route)}
@@ -70,6 +73,10 @@ const useStyles = makeStyles(theme => ({
         position: 'sticky',
         zIndex: 2
     },
+    tab: {
+        padding: '6px 12px !important',
+        position: 'relative !important',
+    }
 }));
 
 function a11yProps(index) {

@@ -1,0 +1,58 @@
+version: '3.6'
+
+services:
+
+    nginx:
+        image: nginx
+        links:
+            - back:back
+            - front:front
+        ports:
+            - '${PORT}:80'
+        volumes:
+            - ./envs/:/etc/nginx/envs/
+            - ./front:/front
+            - ${STG}/static:/stg/static:ro
+            - ${STG}/media:/stg/media:ro
+        restart: always
+        command: /bin/bash -c "envsubst < /etc/nginx/envs/prod/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+ 
+
+    front:
+        build: ./front
+        volumes:
+            - ./back:/back
+            - ./front:/app
+        command: yarn run runserver
+        restart: always
+
+    back:
+        build: ./back
+        volumes: &back_volumes
+            - ./back:/app
+        links: &back_links
+            - postgres:postgres
+            - redis:redis
+        command: daphne -b 0.0.0.0 -p 8000 asgi:application
+        restart: always
+
+    worker:
+        build: ./back
+        links: *back_links
+        volumes: *back_volumes
+        command: ./worker.sh
+        restart: always
+        
+    postgres:
+        image: postgres:12
+        volumes:
+            - /dev/shm:/dev/shm
+            - ${STG}/postgres/:/var/lib/postgresql/data
+        restart: always
+
+    redis:
+        image: redis:6
+        volumes:
+            - ${STG}/redis/:/data
+        restart: always
+

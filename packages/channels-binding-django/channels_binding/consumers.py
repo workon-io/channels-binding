@@ -13,7 +13,7 @@ from .bindings.registry import registered_binding_classes
 from .request import AsyncRequest
 from .utils import encode_json, send, send_sync
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('channels_binding')
 __all__ = [
     'AsyncConsumer',
 ]
@@ -104,14 +104,15 @@ class AsyncConsumer(AsyncWebsocketConsumer):
 
     async def parallel_receive(self, text_data):
         try:
-
             if settings.DEBUG:
                 t0 = time.time()
             request = AsyncRequest(self, text_data)
+            if settings.DEBUG:
+                logger.debug(f'[{request.event}#{request.uid}] ... ')
             await request.apply()
             if settings.DEBUG:
                 t = time.time() - t0
-                logger.debug(f'Event AsyncRequest {request.event}#{request.uid} takes {round(t, 2)} seconds')
+                logger.debug(f'[{request.event}#{request.uid}] done in {round(t, 2)}s')
 
         except RuntimeError as e:
             logger.error(traceback.format_exc())

@@ -17,7 +17,7 @@ USE_TZ = True
 if DEV_MODE:
     ALLOWED_HOSTS = ['*']
 else:
-    ALLOWED_HOSTS = ['*.workon.io']
+    ALLOWED_HOSTS = ['*.http://www.channels-binding.com/']
 
 INSTALLED_APPS = [
     'django.contrib.auth',
