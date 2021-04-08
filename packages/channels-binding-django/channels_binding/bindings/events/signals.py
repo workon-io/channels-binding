@@ -37,16 +37,17 @@ class AsyncSignalsModelBinding(object):
         except RuntimeError:
             asyncio.create_task(cls._m2m_changed(cls, instance, action))
 
-    async def _post_delete(cls, instance):
+    async def _post_delete(cls, instance, pk):
         binding = cls._lazy
-        await send(f'deleted#{getattr(instance, cls.data_pk, instance.pk) or instance.pk}', True, stream=binding.stream, group=binding.stream)
+        await send(f'deleted#{pk}', True, stream=binding.stream, group=binding.stream)
 
     @classmethod
     def post_delete(cls, sender, instance, *args, **kwargs):
+        pk = instance.pk
         try:
-            asyncio.run(cls._post_delete(cls, instance))
+            asyncio.run(cls._post_delete(cls, instance, pk))
         except RuntimeError:
-            asyncio.create_task(cls._post_delete(cls, instance))
+            asyncio.create_task(cls._post_delete(cls, instance, pk))
 
     @classmethod
     def connect_signals(cls, connected=True):
